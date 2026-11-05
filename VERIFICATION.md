@@ -141,3 +141,13 @@ profile bundles      → [..., "dsh-inline-visuals"]
 | 构建 | `index.js` 34.8 KiB；`client.js` 217.4 KiB（Chart.js 内联，react external） |
 | 视觉 | `docs/ml-gallery.png` 用真实 `buildChartConfig` 渲染 6 张 ML 卡片；修复了 Chart.js log 轴注册（`LogarithmicScale` / `"logarithmic"`） |
 | 未验证 | 浏览器内交互与点选追问需人工确认；npm 1.0.0 仍处于 staged 待批准状态 |
+
+
+## 14. v1.1.0 live 验证（2026-11-06，重装后）
+
+| 检查 | 结果 |
+|---|---|
+| 安装 | `install_bundle` → `dsh-inline-visuals@1.1.0`；profile bundle 名同步为无 scope 名称 |
+| curve | `show_visual({kind:"curve", points, auc:0.91, style:{baseline:true}})` 成功，文本回退含 `AUC: 0.91` |
+| leaderboard | `show_visual({kind:"leaderboard", metrics:[...], rows:[...]})` 成功，文本回退为 Markdown 表并加粗最优值（acc 0.93 / F1 0.91 / latency 98ms） |
+| 未验证 | 浏览器内 canvas 卡片（log 轴、误差棒、分组散点）与点选追问需人工刷新页面确认 |
