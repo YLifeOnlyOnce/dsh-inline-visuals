@@ -21,9 +21,10 @@ otherwise generated from commits.
    After this, tag-triggered publishes use OIDC (`id-token: write`) with provenance and no token.
 4. Protect the `v*` tags (Settings → Tags) and require the `CI` workflow on `main`.
 
-> Token fallback: if you cannot use Trusted Publishing, add `NPM_TOKEN` as a secret and change the
-> publish step to set `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` and drop `--provenance`
-> (provenance needs OIDC).
+> Token fallback: the publish step already reads `NODE_AUTH_TOKEN` from the `NPM_TOKEN` secret,
+> so a granular token works out of the box; `--provenance` still requires the `id-token: write`
+> permission that the workflow already grants. If provenance fails for your setup, remove
+> `--provenance` from the publish step.
 
 ## Cutting a release
 

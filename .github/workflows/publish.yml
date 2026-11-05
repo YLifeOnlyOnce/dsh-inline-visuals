@@ -65,6 +65,10 @@ jobs:
 
       - name: Publish to npm
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        env:
+          # Repository secret NPM_TOKEN (granular token with read+write on @oi-yao).
+          # setup-node writes the matching .npmrc entry for the npm registry.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --provenance
 
       - name: Create GitHub Release
