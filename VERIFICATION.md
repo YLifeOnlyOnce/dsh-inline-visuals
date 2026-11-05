@@ -175,3 +175,14 @@ profile bundles      → [..., "dsh-inline-visuals"]
 - 复用 `InlineVisual` 卡片（主题、导出、点选追问均可用）；`turn.js` 纯函数有单测
   （匹配规则、错误过滤、bound 过滤、修订收敛）；
 - 测试总数 **43**。
+
+
+## 17. npm 1.1.0 发布与正文区验证（2026-11-06）
+
+- 推送 `v1.1.0` tag → Publish 工作流成功（43 测试、构建、产物校验、`npm publish --provenance`）；
+- npm 审核/传播后：`npm view dsh-inline-visuals` → **1.1.0**（latest），tarball 可取；
+- 工作流创建 GitHub Release `v1.1.0`（正文取 `publish/release-notes/v1.1.0.md`）；
+- profile 切换到 npm 安装：`dependencies: { "dsh-inline-visuals": "^1.1.0" }`，`install_bundle` → `applied`；
+- live 调用 `show_visual({kind:"curve", auc:0.93})` 成功，文本回退正确；
+- 客户端槽位确认：`conversation.chat.turnTail` 出现 `{ id: "inline-visuals", order: 30, active: true }`——
+  每轮最后一张图会渲染在回答正文下方，同时保留工具调用卡片。
