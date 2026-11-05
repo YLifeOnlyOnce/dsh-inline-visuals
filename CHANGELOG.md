@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [0.2.0] - 2026-11-06
 
+### Changed
+
+- **Package renamed** from `@community/dsh-inline-visuals` to `@oi-yao/dsh-inline-visuals`,
+  so it can be installed directly from npm (`plugin_manager install_bundle`).
+- Publishing pipeline: tag-triggered GitHub Actions workflow with tests, artifact freshness check,
+  `npm publish --provenance`, and a GitHub Release carrying the tarball (see `RELEASING.md`).
+
 ### Added
 
 - **Seven Chart.js kinds**: `bar`, `line`, `area`, `pie`, `doughnut`, `scatter`, `radar`

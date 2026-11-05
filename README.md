@@ -8,6 +8,7 @@ charts, comparison tables, timelines, gantt and KPI tiles inline in the conversa
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![dsh](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.3-1f6feb.svg)](https://deepseek-harness.github.io/deepseek-harness/)
 [![kinds](https://img.shields.io/badge/kinds-11%20charts%20%26%20cards-0a6b3d.svg)](#它能画什么)
+[![npm](https://img.shields.io/npm/v/@oi-yao/dsh-inline-visuals?label=npm&color=cb3837)](https://www.npmjs.com/package/@oi-yao/dsh-inline-visuals)
 [![ci](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml/badge.svg)](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml)
 
 模型不再只回你五段数字——它调用 `show_visual` 工具，提交一份**声明式规格**（不是 HTML、不是 SVG 代码），
@@ -23,22 +24,51 @@ DSH 把它存进会话日志，前端渲染成一张跟随主题的卡片。刷�
 - **零依赖安装**：Host 半是纯 ESM；Client 半把 Chart.js 内联进单文件，React 由宿主模块表提供；
 - **文本回退**：不能渲染卡片的客户端（TUI、导出、日志）会收到紧凑的文字摘要（列表或 Markdown 表）。
 
-## 十秒安装
+## 30 秒安装
+
+### 方式 A · 在 DSH 里一行装（推荐，无需终端）
+
+```text
+plugin_manager({ action: "install_bundle", target: "@oi-yao/dsh-inline-visuals" })
+```
+
+看到 `application: "applied"` 即成功；如果提示 `already-installed`，先
+`remove_bundle` 再装。之后：
+
+- Agent 的工具列表里出现 `show_visual`；
+- 侧边栏 Plugins 页出现「内联可视化 / Inline Visuals」条目（原创图标 + 中英文描述）。
+
+### 方式 B · 还没发布到 npm？直接从 GitHub 装
+
+```text
+plugin_manager({ action: "install_bundle", target: "github:YLifeOnlyOnce/dsh-inline-visuals" })
+```
+
+pnpm 会解析仓库里的 `package.json` 安装（首次约 30–60 秒），不需要 npm 包先发布。
+
+### 方式 C · 本地源码 / 贡献者
 
 ```bash
 git clone https://github.com/YLifeOnlyOnce/dsh-inline-visuals.git
 ```
 
-在 DSH 会话里把**绝对路径**交给 Plugin Manager：
-
 ```text
 plugin_manager({ action: "install_bundle", target: "/abs/path/to/dsh-inline-visuals" })
 ```
 
-看到 `application: "applied"` 即成功。之后：
+### 装完就能用
 
-- Agent 的工具列表里出现 `show_visual`；
-- 侧边栏 Plugins 页出现「内联可视化 / Inline Visuals」条目（原创图标 + 中英文描述）。
+对模型说一句就行，例如：
+
+> 「把三种缓存方案的命中率画成柱状图，再加一句结论。」
+
+或者验证安装：
+
+```text
+cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" })
+```
+
+应能在工具列表里看到 `show_visual`。
 
 > 要求 DSH ≥ `v0.2.1-rc.3`（依赖 `presentationMeta` 输出契约与 `tool.call.toolview` 槽位）。
 > 更换插件代码后需要重启 dsh 进程才会加载新的 Host 模块代际；只改 Client 刷新页面即可。
@@ -159,7 +189,7 @@ Client 在 tool.call.toolview(key=show_visual) 渲染
 卸载：
 
 ```text
-plugin_manager({ action: "remove_bundle", target: "@community/dsh-inline-visuals" })
+plugin_manager({ action: "remove_bundle", target: "@oi-yao/dsh-inline-visuals" })
 ```
 
 历史会话里已渲染的卡片会回退为通用工具行（`meta` 仍留在日志里，数据不丢）。
@@ -179,6 +209,9 @@ tests/                 node:test：normalize / text / chart-config
   必须做到零构建即可运行；CI 会检查产物是否与 `src/` 同步（`git diff --exit-code`）；
 - Chart.js 只作为 devDependency 参与构建，运行时完全内联进 `client.js`；
   React 由宿主的模块表提供（`require('react')`），绝不打包第二份实例；
+- **发布流水线**：推送 `v*` tag 触发 [`.github/workflows/publish.yml`](.github/workflows/publish.yml)：
+  `npm ci → test → build → 产物校验 → npm publish --provenance → GitHub Release`，
+  配置见 [`RELEASING.md`](RELEASING.md)；
 - 本地命令：
 
 ```bash

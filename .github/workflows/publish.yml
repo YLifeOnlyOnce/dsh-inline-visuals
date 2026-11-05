@@ -1,0 +1,74 @@
+name: Publish
+
+# Publishes to npm and creates a GitHub Release when a version tag is pushed.
+# Manual runs default to dry-run so the pack + checks can be exercised safely.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Pack and run all checks without publishing'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write   # GitHub Release
+  id-token: write   # npm provenance via OIDC / Trusted Publishing
+
+jobs:
+  publish:
+    name: Build, test, publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build generated artifacts
+        run: npm run build
+
+      - name: Generated artifacts are committed
+        run: git diff --exit-code -- index.js client.js
+
+      - name: Tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          node -e '
+            const pkg = require("./package.json");
+            const tag = process.env.TAG.replace(/^v/, "");
+            if (pkg.version !== tag) {
+              console.error(`tag v${tag} does not match package version ${pkg.version}`);
+              process.exit(1);
+            }
+            console.log(`publishing ${pkg.name}@${pkg.version}`);
+          '
+
+      - name: Pack
+        run: npm pack
+
+      - name: Publish (dry run)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        run: npm publish --dry-run --access public
+
+      - name: Publish to npm
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        run: npm publish --access public --provenance
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" ./*.tgz --generate-notes --title "$GITHUB_REF_NAME"

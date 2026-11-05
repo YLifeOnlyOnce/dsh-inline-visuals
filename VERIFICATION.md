@@ -8,7 +8,7 @@
 ```text
 plugin_manager({ action: "install_bundle", target: "/Users/xiangbo/AAAAAgent/zero/dsh-inline-visuals" })
 → application: "applied" · warnings: [] · pnpm exit 0
-→ profile 依赖：{"@community/dsh-inline-visuals": "link:.../dsh-inline-visuals"}
+→ profile 依赖：{"@oi-yao/dsh-inline-visuals": "link:.../dsh-inline-visuals"}
 ```
 
 ## 2. 工具注册
@@ -66,3 +66,21 @@ normalize.test.mjs: all checks passed
 | 视觉验证 | `scripts/demo.mjs` 用 headless Chrome + 真实 `buildChartConfig` 渲染 9 种图型到 `docs/demo.png`，确认 Chart.js 配置可出图 |
 | 文本回退 | `renderText()` 覆盖 11 种 kind，长列表截断 |
 | 未验证 | 运行中的 dsh 进程仍加载 v0.1 Host 模块代际；新版本的工具注册与卡片渲染需要**重启 dsh** 后人工确认 |
+
+
+## 8. v0.2.0 live 验证（2026-11-06，包名迁移后）
+
+包名从 `@community/...` 迁移到 `@oi-yao/...` 后，在运行中的 `web` profile 上完成了一次真实安装：
+
+```text
+plugin_manager remove_bundle @community/dsh-inline-visuals   → applied
+plugin_manager install_bundle /abs/path/dsh-inline-visuals  → applied · @oi-yao/dsh-inline-visuals 0.2.0
+profile dependencies → {"@oi-yao/dsh-inline-visuals": "link:.../dsh-inline-visuals"}
+profile bundles      → [..., "@oi-yao/dsh-inline-visuals"]
+```
+
+**live 证据**：调用 `show_visual({ kind: "pie", ... })` 成功（v0.1 不支持该 kind），
+返回的是 v0.2 的**文本回退**（`- Chart.js 图表: 7种 (64%) …` + note），说明新 Host 模块代际已加载。
+
+**未完成**：客户端卡片渲染需要页面刷新后人工确认（Chart.js 图型、PNG 导出按钮）；
+`npm publish --dry-run` 已通过（85.6 kB / 10 files / public），正式发布待 npm 账号与 Trusted Publisher 配置。

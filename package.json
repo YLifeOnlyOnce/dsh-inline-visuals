@@ -1,9 +1,26 @@
 {
-  "name": "@community/dsh-inline-visuals",
+  "name": "@oi-yao/dsh-inline-visuals",
   "version": "0.2.0",
-  "private": true,
-  "description": "Inline, replayable visuals for DeepSeek Harness: charts, comparison tables, timelines, gantt and KPI tiles.",
+  "description": "Inline, replayable visuals for DeepSeek Harness: 11 chart, table, timeline, gantt and KPI kinds rendered inside the conversation.",
   "type": "module",
+  "license": "MIT",
+  "author": "YLifeOnlyOnce",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YLifeOnlyOnce/dsh-inline-visuals.git"
+  },
+  "homepage": "https://github.com/YLifeOnlyOnce/dsh-inline-visuals#readme",
+  "bugs": {
+    "url": "https://github.com/YLifeOnlyOnce/dsh-inline-visuals/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "charts",
+    "visualization",
+    "tool-view"
+  ],
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -24,7 +41,9 @@
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "npm run build && npm test",
-    "prepare-demo": "node scripts/demo.mjs"
+    "pack:check": "npm pack --dry-run",
+    "prepare-demo": "node scripts/demo.mjs",
+    "prepublishOnly": "npm run check"
   },
   "dependencies": {},
   "devDependencies": {
@@ -33,6 +52,10 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "dsh": {
     "bundle": {
