@@ -2,7 +2,7 @@
 
 **X / Twitter thread**
 
-1. > DSH plugin: `show_visual` lets the model draw **13 kinds** of visuals inside the chat —
+1. > DSH plugin: `show_visual` lets the model draw **14 kinds** of visuals inside the chat —
    > 7 Chart.js charts plus compare tables, timelines, gantt and KPI tiles.
    > The spec is persisted on the tool result, so replay needs no model call. MIT.
    > → github.com/YLifeOnlyOnce/dsh-inline-visuals
@@ -15,7 +15,7 @@
 
 **Reddit / HN / forum**
 
-> **A DSH plugin that turns model output into 13 kinds of replayable visuals**
+> **A DSH plugin that turns model output into 14 kinds of replayable visuals**
 >
 > DSH's tool results are durable session events, so I built `show_visual`: the model submits a small
 > declarative spec (7 Chart.js kinds, plus compare tables, timelines, gantt and KPI tiles), the Host

@@ -107,3 +107,15 @@ profile bundles      → [..., "@oi-yao/dsh-inline-visuals"]
 | 新图型 | `show_visual({kind:"waterfall", style:{values:true}, ...})` 成功，返回 v0.3 文本回退（`+120k (→ 120k)`、`净利: 60k`） |
 | 基于图修改 | `edit_visual({patch:{title, note, style:{palette:"warm", values:true}}})` 成功：从会话日志取到上一张图，合并 patch 后重新渲染，未重发 data、未重调模型 |
 | 说明 | 文本回退与工具结果已验证；浏览器内的 Chart.js 卡片与 PNG 导出需人工刷新页面确认 |
+
+
+## 11. v1.0.0（2026-11-06）
+
+| 检查 | 结果 |
+|---|---|
+| `npm test` | 32/32 通过：14 种 kind 归一化（含 flow DAG/环/未知节点）、样式、文本回退、Chart.js 配置、patch/history、CSV、追问文案、客户端 bundle（双槽位） |
+| 构建 | `index.js` 约 26 KiB；`client.js` 约 214 KiB（Chart.js 内联，react external） |
+| 交互 | 点选数据点 → 选中值 chip → 「追问这点」经 `inputActions.captureInsertion/insertText` 插入追问；客户端 bundle 冒烟覆盖注册 |
+| 导出 | 复制 JSON / CSV；Chart.js 图型导出 PNG；heatmap/flow/gantt 导出 SVG |
+| reduce motion | `prefers-reduced-motion: reduce` 时动画时长 0 |
+| 未验证 | 浏览器内点选/导出交互需人工确认；npm 发布被 token 2FA 权限阻塞（等更新） |

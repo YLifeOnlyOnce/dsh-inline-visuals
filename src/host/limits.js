@@ -3,7 +3,7 @@
 /** Visual kinds understood by the Host normalizer and the Client renderer. */
 export const KINDS = [
   'bar', 'line', 'area', 'pie', 'doughnut', 'scatter', 'radar', 'waterfall', 'heatmap',
-  'compare', 'timeline', 'gantt', 'metrics',
+  'compare', 'timeline', 'gantt', 'metrics', 'flow',
 ]
 
 /** Named palettes; the Client resolves them against host theme tokens. */
@@ -37,5 +37,7 @@ export const LIMITS = {
   points: 240,
   matrixRows: 12,
   matrixColumns: 12,
+  nodes: 20,
+  edges: 40,
   text: 240,
 }

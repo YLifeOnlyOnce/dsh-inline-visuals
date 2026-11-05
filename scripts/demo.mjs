@@ -92,6 +92,29 @@ const metricsCard = CARD(`
     <div class="tile"><span>今日花费</span><b>$42</b><i class="flat">→ 持平</i></div>
   </div>`, '指标卡 metrics', 'KPI / 巡检快照')
 
+const flowCard = CARD(`
+  <svg viewBox="0 0 460 230" width="100%">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d0d5dd"/></marker></defs>
+    <rect x="170" y="8" width="120" height="40" rx="8" fill="#f3f4f6" stroke="#e5e7eb"/>
+    <text x="230" y="26" text-anchor="middle" fill="#1f2328" font-size="11" font-weight="600">需求</text>
+    <text x="230" y="40" text-anchor="middle" fill="#8b929c" font-size="9">review</text>
+    <rect x="40" y="96" width="120" height="40" rx="8" fill="#f3f4f6" stroke="#e5e7eb"/>
+    <text x="100" y="114" text-anchor="middle" fill="#1f2328" font-size="11" font-weight="600">前端</text>
+    <text x="100" y="128" text-anchor="middle" fill="#8b929c" font-size="9">2 天</text>
+    <rect x="300" y="96" width="120" height="40" rx="8" fill="#f3f4f6" stroke="#e5e7eb"/>
+    <text x="360" y="114" text-anchor="middle" fill="#1f2328" font-size="11" font-weight="600">后端</text>
+    <text x="360" y="128" text-anchor="middle" fill="#8b929c" font-size="9">3 天</text>
+    <rect x="170" y="184" width="120" height="40" rx="8" fill="#eef4ff" stroke="#bfd3f7"/>
+    <text x="230" y="202" text-anchor="middle" fill="#1f2328" font-size="11" font-weight="600">发布</text>
+    <text x="230" y="216" text-anchor="middle" fill="#8b929c" font-size="9">周五</text>
+    <g fill="none" stroke="#d0d5dd" stroke-width="1.4" marker-end="url(#a)">
+      <path d="M 230 48 C 230 70, 100 74, 100 96"/>
+      <path d="M 230 48 C 230 70, 360 74, 360 96"/>
+      <path d="M 100 136 C 100 164, 230 160, 230 184"/>
+      <path d="M 360 136 C 360 164, 230 160, 230 184"/>
+    </g>
+  </svg>`, '流程图 flow', 'DAG / 编排')
+
 const heatmapCard = CARD(`
   <svg viewBox="0 0 440 220" width="100%">
     <text x="92" y="16" text-anchor="end" fill="#8b929c" font-size="10">周一</text>
@@ -123,7 +146,7 @@ const heatmapCard = CARD(`
 
 const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
 *{box-sizing:border-box}
-body{margin:0;padding:34px 40px;width:1500px;height:1880px;background:#f2f4f7;
+body{margin:0;padding:34px 40px;width:1500px;height:2280px;background:#f2f4f7;
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;color:#1f2328}
 h1{margin:0 0 4px;font-size:26px}
 .lead{margin:0 0 22px;color:#6b7280;font-size:13.5px}
@@ -154,7 +177,7 @@ h1{margin:0 0 4px;font-size:26px}
 .tile i.up{color:#1a7f37}.tile i.down{color:#cf222e}.tile i.flat{color:#8b929c}
 .note{margin-top:18px;color:#9aa0a6;font-size:11.5px}
 </style></head><body>
-<h1>Inline Visuals · 13 种图型 · 样式可调</h1>
+<h1>Inline Visuals · 14 种图型 · 样式可调 · 可追问</h1>
 <p class="lead">Chart.js 负责图表类（bar / line / area / pie / doughnut / scatter / radar / waterfall），SVG 与 HTML 负责 compare / timeline / gantt / heatmap / metrics。style 支持横向、堆叠、阶梯、数值标签、图例/网格、配色与趋势线；edit_visual 可基于上一张图做局部修改。</p>
 <div class="grid">
   ${chartCard('bar', '柱状图 bar', '含数值标签')}
@@ -165,6 +188,7 @@ h1{margin:0 0 4px;font-size:26px}
   ${chartCard('radar', '雷达图 radar', '多维对比')}
   ${chartCard('scatter', '散点 + 趋势线', 'trendLine: true')}
   ${chartCard('waterfall', '瀑布图 waterfall', '增减分解')}
+  ${flowCard}
   ${heatmapCard}
   ${compareCard}
   ${timelineCard}
@@ -191,7 +215,7 @@ const raw = path.join(work, 'demo.png')
 try {
   execFileSync(CHROME, [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-sandbox',
-    '--force-device-scale-factor=2', '--window-size=1500,1900',
+    '--force-device-scale-factor=2', '--window-size=1500,2300',
     `--screenshot=${raw}`, `file://${page}`,
   ], { stdio: 'ignore' })
   await mkdir(path.join(root, 'docs'), { recursive: true })

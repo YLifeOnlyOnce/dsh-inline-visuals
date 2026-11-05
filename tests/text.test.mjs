@@ -49,3 +49,18 @@ test('waterfall and heatmap text fallbacks', () => {
   const heatmap = text({ kind: 'heatmap', title: 'h', data: { rows: ['a'], columns: ['x', 'y'], values: [[1, 2]] } })
   assert.match(heatmap, /\| a \| 1 \| 2 \|/)
 })
+
+
+test('flow text fallback lists nodes and edges', () => {
+  const out = text({
+    kind: 'flow',
+    title: 'f',
+    data: {
+      nodes: [{ id: 'a', label: '规划' }, { id: 'b', label: '实现', detail: '2 天' }],
+      edges: [{ from: 'a', to: 'b', label: '批准后' }],
+    },
+  })
+  assert.match(out, /- 规划/)
+  assert.match(out, /- 实现 — 2 天/)
+  assert.match(out, /- 规划 → 实现 \(批准后\)/)
+})

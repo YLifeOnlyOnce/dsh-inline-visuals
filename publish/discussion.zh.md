@@ -4,7 +4,7 @@
 
 ## 标题
 
-**插件分享：Inline Visuals —— 让模型在对话里画出可重放的图（13 种图型）**
+**插件分享：Inline Visuals —— 让模型在对话里画出可重放的图（14 种图型）**
 
 ## 正文
 
@@ -14,7 +14,7 @@
 
 ![示例](../docs/demo.png)
 
-- 13 种图型：bar / line / area / pie / doughnut / scatter / radar（Chart.js）+ compare / timeline / gantt / metrics（自绘 SVG/HTML）；
+- 14 种图型：bar / line / area / pie / doughnut / scatter / radar（Chart.js）+ compare / timeline / gantt / metrics（自绘 SVG/HTML）；
 - 模型只提交**声明式规格**（不是 HTML/SVG 代码），Host 校验裁剪后通过 `output.presentationMeta` 存进 `tool/result.meta`；
 - Client 在 `tool.call.toolview` 按工具名注册渲染器，颜色全部来自 `--dsw-alias-*` 主题 token；
 - 因为数据在会话日志里，**刷新、重开、fork 都能重放**，不需要再调模型；

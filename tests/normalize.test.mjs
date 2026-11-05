@@ -18,6 +18,7 @@ const SPECS = {
   metrics: { items: [{ label: 'p95', value: 120, delta: '12ms', trend: 'up' }], unit: 'ms' },
   waterfall: { labels: ['收入', '成本'], values: [100, -30], unit: 'k' },
   heatmap: { rows: ['a', 'b'], columns: ['x', 'y'], values: [[1, 2], [3, 4]] },
+  flow: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], edges: [{ from: 'a', to: 'b' }] },
 }
 
 const roundTrip = (value) => JSON.parse(JSON.stringify(value))
@@ -89,6 +90,22 @@ test('invalid input rejects with a readable message', () => {
   assert.throws(() => normalize({ kind: 'gantt', title: 'g', data: { tasks: [{ label: 'a', start: 3, end: 1 }] } }), /end must be >= start/)
   assert.throws(() => normalize({ kind: 'bar', title: 'b', data: { labels: [], series: [] } }), /must not be empty/)
   assert.throws(() => normalize(null), /expects one object/)
+})
+
+test('flow rejects cycles and unknown node references', () => {
+  const nodes = [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }]
+  assert.throws(
+    () => normalize({ kind: 'flow', title: 'f', data: { nodes, edges: [{ from: 'a', to: 'b' }, { from: 'b', to: 'a' }] } }),
+    /must form a DAG/,
+  )
+  assert.throws(
+    () => normalize({ kind: 'flow', title: 'f', data: { nodes, edges: [{ from: 'a', to: 'missing' }] } }),
+    /unknown node/,
+  )
+  assert.throws(
+    () => normalize({ kind: 'flow', title: 'f', data: { nodes: [{ id: 'a', label: 'A' }, { id: 'a', label: 'A2' }], edges: [] } }),
+    /ids must be unique/,
+  )
 })
 
 test('style defaults fill in and invalid values reject', () => {

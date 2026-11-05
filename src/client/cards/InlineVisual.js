@@ -1,11 +1,15 @@
 /* SPDX-License-Identifier: MIT */
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { CANVAS_KINDS } from '../chart-config.js'
 import { readTokens } from '../theme.js'
 import { useThemeVersion } from '../use-theme.js'
+import { fmt } from '../format.js'
+import { buildFollowUp } from '../follow-up.js'
+import { toCsv } from '../csv.js'
 import { ChartCanvas } from './ChartCanvas.js'
 import { Compare } from './Compare.js'
+import { Flow } from './Flow.js'
 import { Gantt } from './Gantt.js'
 import { Heatmap } from './Heatmap.js'
 import { Metrics } from './Metrics.js'
@@ -47,9 +51,13 @@ export function InlineVisual(props) {
   const spec = props.phase === 'result' && props.block ? props.block.meta : undefined
   const [showData, setShowData] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [csvCopied, setCsvCopied] = useState(false)
+  const [picked, setPicked] = useState(null)
   const figureRef = useRef(null)
   useThemeVersion()
   const tokens = readTokens()
+  const signature = spec ? JSON.stringify({ kind: spec.kind, data: spec.data, style: spec.style }) : ''
+  useEffect(() => setPicked(null), [signature])
 
   if (props.phase !== 'result') {
     return h('div', {
@@ -96,6 +104,33 @@ export function InlineVisual(props) {
 
   const style = spec.style ?? {}
   const canExport = CANVAS_KINDS.has(spec.kind)
+  const hasSvg = !CANVAS_KINDS.has(spec.kind) && ['heatmap', 'flow', 'gantt'].includes(spec.kind)
+  const onCopyCsv = () => {
+    const csv = toCsv(spec)
+    if (!csv || typeof navigator === 'undefined' || !navigator.clipboard) return
+    navigator.clipboard.writeText(csv).then(() => setCsvCopied(true), () => {})
+  }
+  const onExportSvg = () => {
+    const figure = figureRef.current
+    const svg = figure ? figure.querySelector('svg') : null
+    if (!svg || typeof XMLSerializer === 'undefined') return
+    const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' })
+    const link = document.createElement('a')
+    link.download = `${(spec.title || 'visual').replace(/[^\w\u4e00-\u9fa5-]+/g, '-')}.svg`
+    link.href = URL.createObjectURL(blob)
+    link.click()
+    URL.revokeObjectURL(link.href)
+  }
+  const onAsk = () => {
+    const input = props.inputActions
+    if (!input || !picked || typeof input.captureInsertion !== 'function') return
+    const text = buildFollowUp(spec, picked, props.localeCode === 'en' ? 'en' : 'zh')
+    const span = input.captureInsertion()
+    input.insertText(text, span)
+    input.persistDraft?.()
+    setPicked(null)
+  }
+
   return h('figure', {
     ref: figureRef,
     style: {
@@ -117,7 +152,18 @@ export function InlineVisual(props) {
     spec.subtitle
       ? h('span', { style: { color: tokens.muted, fontSize: '12px' } }, spec.subtitle)
       : null)),
-  h(ChartBody, { spec, t }),
+  h(ChartBody, { spec, t, onPick: setPicked }),
+  picked
+    ? h('div', {
+        style: {
+          display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap',
+          marginTop: '8px', padding: '6px 10px', borderRadius: '8px',
+          background: tokens.surfaceMuted, color: tokens.muted, fontSize: '12px',
+        },
+      },
+      h('span', null, `${t('picked')}: ${picked.label ?? ''}${picked.series ? ` · ${picked.series}` : ''}${typeof picked.value === 'number' ? ` = ${fmt(picked.value, spec.data.unit)}` : ''}`),
+      h('button', { type: 'button', onClick: onAsk, style: buttonStyle(tokens) }, t('ask')))
+    : null,
   spec.note
     ? h('p', { style: { margin: '10px 0 0', color: tokens.muted, fontSize: '12px' } }, spec.note)
     : null,
@@ -137,6 +183,7 @@ export function InlineVisual(props) {
     : null,
   h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' } },
     h('button', { type: 'button', onClick: onCopy, style: buttonStyle(tokens) }, copied ? t('copied') : t('copy')),
+    h('button', { type: 'button', onClick: onCopyCsv, style: buttonStyle(tokens) }, csvCopied ? t('copied') : t('copyCsv')),
     h('button', {
       type: 'button',
       'aria-pressed': showData,
@@ -145,5 +192,8 @@ export function InlineVisual(props) {
     }, showData ? t('hideData') : t('showData')),
     canExport
       ? h('button', { type: 'button', onClick: onExport, style: buttonStyle(tokens) }, t('exportPng'))
+      : null,
+    hasSvg
+      ? h('button', { type: 'button', onClick: onExportSvg, style: buttonStyle(tokens) }, t('exportSvg'))
       : null))
 }

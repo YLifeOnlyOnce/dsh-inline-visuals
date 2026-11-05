@@ -82,6 +82,18 @@ function heatmapLines(data) {
   return [head, rule, ...body]
 }
 
+function flowLines(data) {
+  const byId = new Map(data.nodes.map((node) => [node.id, node]))
+  const lines = data.nodes.slice(0, MAX_LINES).map((node) =>
+    `- ${node.label}${node.detail ? ` — ${node.detail}` : ''}`)
+  if (data.nodes.length > MAX_LINES) lines.push(`- … (${data.nodes.length - MAX_LINES} more nodes)`)
+  if (data.edges.length > 0) {
+    lines.push('', ...data.edges.slice(0, MAX_LINES).map((edge) =>
+      `- ${byId.get(edge.from)?.label ?? edge.from} → ${byId.get(edge.to)?.label ?? edge.to}${edge.label ? ` (${edge.label})` : ''}`))
+  }
+  return lines
+}
+
 function metricLines(data) {
   return data.items.map((item) => {
     const arrow = item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : item.trend === 'flat' ? '→' : ''
@@ -104,6 +116,7 @@ const BODIES = {
   metrics: metricLines,
   waterfall: waterfallLines,
   heatmap: heatmapLines,
+  flow: flowLines,
 }
 
 /**

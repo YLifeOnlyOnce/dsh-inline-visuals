@@ -362,8 +362,12 @@ export function buildChartConfig(spec, tokens) {
  * @param canvas - target canvas element.
  * @param spec - normalized visual spec.
  * @param tokens - resolved theme tokens.
+ * @param handlers - optional `onClick(event, elements)` and `reduceMotion` (accessibility).
  * @returns the Chart.js instance (caller owns destroy()).
  */
-export function createChart(canvas, spec, tokens) {
-  return new Chart(canvas, buildChartConfig(spec, tokens))
+export function createChart(canvas, spec, tokens, handlers = {}) {
+  const config = buildChartConfig(spec, tokens)
+  config.options.onClick = handlers.onClick
+  if (handlers.reduceMotion) config.options.animation = { duration: 0 }
+  return new Chart(canvas, config)
 }

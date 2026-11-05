@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-11-06
+
+First stable release. The spec format (`version: 3`), the two tools (`show_visual`, `edit_visual`)
+and the style vocabulary below are treated as stable; older specs (v1/v2) remain replayable.
+
+### Added
+
+- **`flow` kind**: layered DAG with labeled edges (agent pipelines, approval flows, build graphs);
+  cycles and unknown node references are rejected at normalization time. 14 kinds total.
+- **Click-to-ask**: clicking a chart data point shows the selected value and inserts a follow-up
+  prompt into the composer (`buildFollowUp`), so users can drill into what they see without retyping.
+- **CSV copy** for every tabular kind and **SVG export** for the hand-drawn cards.
+- **Reduced motion**: `prefers-reduced-motion` disables chart animations.
+- Accessibility: canvas/ARIA labels, `title` tooltips on SVG marks, native table semantics.
+
+### Changed
+
+- `ChartCanvas` now keys on the full spec including `style`, so `edit_visual` style patches rerender
+  (previously a style-only patch was ignored by an existing chart).
+- Test suite grew to 32 cases (flow validation, CSV, follow-up prompts, style-aware configs).
+
+### Stability
+
+- Public contract: spec `version: 3`; tools and style vocabulary are covered by tests and documented
+  in README. Breaking changes will bump the major version and keep older specs renderable.
+
 ## [0.3.0] - 2026-11-06
 
 ### Added

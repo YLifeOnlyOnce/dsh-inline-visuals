@@ -9,7 +9,7 @@
 **长版（微信群 / 公众号摘要）**
 
 > 周末给 DeepSeek Harness 写了个插件 `dsh-inline-visuals`：模型不再只回你五段数字，而是调用
-> `show_visual` 画一张卡片——13 种图型（7 种 Chart.js 图表 + 对比表 / 时间线 / 甘特 / KPI）。
+> `show_visual` 画一张卡片——14 种图型（7 种 Chart.js 图表 + 对比表 / 时间线 / 甘特 / KPI）。
 > 关键是它把规格持久化在会话日志里，所以刷新、重开、fork 都能重放，不用二次调模型。
 > Chart.js 内联进单文件、React 用宿主的；声明式规格不执行代码，主题 token + 中英文案，
 > 12 个测试 + CI。一行安装：`plugin_manager install_bundle @oi-yao/dsh-inline-visuals`。

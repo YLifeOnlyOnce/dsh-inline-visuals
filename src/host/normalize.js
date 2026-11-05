@@ -190,6 +190,53 @@ function heatmapData(data) {
   return { rows, columns, values, ...(unit === undefined ? {} : { unit }) }
 }
 
+function flowData(data) {
+  optObject(data, 'flow.data')
+  if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+    throw new TypeError('flow.data needs `nodes` and `edges` arrays')
+  }
+  const nodes = data.nodes.slice(0, LIMITS.nodes).map((node, index) => {
+    if (node === null || typeof node !== 'object') throw new TypeError(`nodes[${index}] must be an object`)
+    const id = str(node.id, `nodes[${index}].id`, 40)
+    const detail = optStr(node.detail, `nodes[${index}].detail`)
+    return {
+      id,
+      label: str(node.label ?? id, `nodes[${index}].label`, 80),
+      ...(detail === undefined ? {} : { detail }),
+    }
+  })
+  if (nodes.length === 0) throw new TypeError('flow.data.nodes must not be empty')
+  const ids = new Set(nodes.map((node) => node.id))
+  if (ids.size !== nodes.length) throw new TypeError('flow.data.nodes ids must be unique')
+  const edges = data.edges.slice(0, LIMITS.edges).map((edge, index) => {
+    if (edge === null || typeof edge !== 'object') throw new TypeError(`edges[${index}] must be an object`)
+    const from = str(edge.from, `edges[${index}].from`, 40)
+    const to = str(edge.to, `edges[${index}].to`, 40)
+    if (!ids.has(from) || !ids.has(to)) throw new TypeError(`edges[${index}] references an unknown node`)
+    const label = optStr(edge.label, `edges[${index}].label`, 60)
+    return { from, to, ...(label === undefined ? {} : { label }) }
+  })
+  // Reject cycles: the renderer draws layered DAGs only.
+  const indegree = new Map(nodes.map((node) => [node.id, 0]))
+  const outgoing = new Map(nodes.map((node) => [node.id, []]))
+  for (const edge of edges) {
+    indegree.set(edge.to, (indegree.get(edge.to) ?? 0) + 1)
+    outgoing.get(edge.from)?.push(edge.to)
+  }
+  const queue = [...indegree.entries()].filter(([, degree]) => degree === 0).map(([id]) => id)
+  let visited = 0
+  while (queue.length > 0) {
+    const id = queue.shift()
+    visited += 1
+    for (const next of outgoing.get(id) ?? []) {
+      indegree.set(next, (indegree.get(next) ?? 0) - 1)
+      if (indegree.get(next) === 0) queue.push(next)
+    }
+  }
+  if (visited !== nodes.length) throw new TypeError('flow.data.edges must form a DAG without cycles')
+  return { nodes, edges }
+}
+
 const NORMALIZERS = {
   bar: seriesData,
   line: seriesData,
@@ -204,6 +251,7 @@ const NORMALIZERS = {
   metrics: (data) => metricsData(data),
   waterfall: (data) => waterfallData(data),
   heatmap: (data) => heatmapData(data),
+  flow: (data) => flowData(data),
 }
 
 /**

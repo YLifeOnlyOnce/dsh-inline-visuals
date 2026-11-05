@@ -3,12 +3,12 @@
 ![Inline Visuals banner](docs/banner.png)
 
 **让模型在对话里画出可重放的图。** · A DeepSeek Harness plugin that renders small, replayable
-13 kinds of charts/tables/timelines/gantt/heatmaps/KPI tiles, with presentation styles and an
-`edit_visual` tool the agent can use to revise a previous visual by patching it.
+14 kinds of charts/tables/timelines/gantt/heatmaps/flows/KPI tiles, with presentation styles,
+click-to-ask drill-down, and an `edit_visual` tool the agent can use to revise a previous visual by patching it.
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![dsh](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.3-1f6feb.svg)](https://deepseek-harness.github.io/deepseek-harness/)
-[![kinds](https://img.shields.io/badge/kinds-13%20visuals%20%C2%B7%20styles-0a6b3d.svg)](#它能画什么)
+[![kinds](https://img.shields.io/badge/kinds-14%20visuals%20%C2%B7%20styles-0a6b3d.svg)](#它能画什么)
 [![npm](https://img.shields.io/npm/v/@oi-yao/dsh-inline-visuals?label=npm&color=cb3837)](https://www.npmjs.com/package/@oi-yao/dsh-inline-visuals)
 [![ci](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml/badge.svg)](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml)
 
@@ -24,7 +24,9 @@ DSH 把它存进会话日志，前端渲染成一张跟随主题的卡片。刷�
 - **原生感**：颜色全部来自 `--dsw-alias-*` 主题 token，中英文案走宿主 locale，深浅色都不破；
 - **零依赖安装**：Host 半是纯 ESM；Client 半把 Chart.js 内联进单文件，React 由宿主模块表提供；
 - **文本回退**：不能渲染卡片的客户端（TUI、导出、日志）会收到紧凑的文字摘要（列表或 Markdown 表）；
-- **可改可定制**：`style` 控制横向/堆叠/阶梯/数值标签/图例/网格/配色/趋势线，`edit_visual` 让 Agent 基于上一张图做局部修改（只传要改的字段）。
+- **可改可定制**：`style` 控制横向/堆叠/阶梯/数值标签/图例/网格/配色/趋势线，`edit_visual` 让 Agent 基于上一张图做局部修改（只传要改的字段）；
+- **可追问**：点击图上的数据点 → 出现选中值和「追问这点」按钮，点击后自动把结构化追问插入输入框；
+- **可导出**：复制 JSON / CSV，Chart.js 图型导出 PNG，自绘 SVG 卡片导出 SVG。
 
 ## 30 秒安装
 
@@ -79,12 +81,12 @@ cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" }
 
 ## 它能画什么
 
-![13 种图型](docs/demo.png)
+![14 种图型](docs/demo.png)
 
 | 类别 | kinds | 渲染方式 |
 |---|---|---|
 | **图表** | `bar` `line` `area` `pie` `doughnut` `scatter` `radar` `waterfall` | Chart.js（canvas）：主题色、tooltip、图例、动画、可导出 PNG |
-| **结构化** | `compare` `timeline` `gantt` `heatmap` `metrics` | 自绘 SVG / HTML：零依赖、原生表格语义、可复制数据 |
+| **结构化** | `compare` `timeline` `gantt` `heatmap` `flow` `metrics` | 自绘 SVG / HTML：零依赖、原生表格语义、可复制数据 |
 
 | kind | 用于 | `data` 形状 |
 |---|---|---|
@@ -97,6 +99,7 @@ cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" }
 | `gantt` | 排期 / 长任务 | `{ tasks: [{ label, start, end, group? }], unit?: string }` |
 | `heatmap` | 矩阵 / 密度 | `{ rows: string[], columns: string[], values: number[][], unit? }` |
 | `metrics` | KPI 巡检 | `{ items: [{ label, value, delta?, trend?: "up"|"down"|"flat" }], unit?: string }` |
+| `flow` | 流程 / DAG | `{ nodes: [{ id, label, detail? }], edges: [{ from, to, label? }] }`（必须是 DAG） |
 
 ### 样式（`style`）
 
@@ -261,7 +264,7 @@ tests/                 node:test：normalize / text / chart-config
   必须做到零构建即可运行；CI 会检查产物是否与 `src/` 同步（`git diff --exit-code`）；
 - Chart.js 只作为 devDependency 参与构建，运行时完全内联进 `client.js`；
   React 由宿主的模块表提供（`require('react')`），绝不打包第二份实例；
-- 测试规模：26 个 `node:test` 用例（归一化 13 种 kind、样式校验、文本回退、Chart.js 配置变体、patch/history、客户端 bundle 冒烟）；
+- 测试规模：32 个 `node:test` 用例（归一化 14 种 kind、样式校验、文本回退、Chart.js 配置变体、patch/history、CSV、追问文案、客户端 bundle 冒烟）；
 - **发布流水线**：推送 `v*` tag 触发 [`.github/workflows/publish.yml`](.github/workflows/publish.yml)：
   `npm ci → test → build → 产物校验 → npm publish --provenance → GitHub Release`，
   配置见 [`RELEASING.md`](RELEASING.md)；
@@ -285,9 +288,16 @@ npm run check   # build + test
 
 - [x] v0.1：四种图型、主题适配、中英文案、确定性测试、安装验证
 - [x] v0.2：11 种图型、文本回退、PNG 导出、Chart.js 内联、`src/` 构建、测试与 CI
-- [x] v0.3：13 种图型（+ waterfall / heatmap）、`style` 变体、`edit_visual` 局部修改、26 个测试
-- [ ] v0.4：更多图型（flow / sankey / bullet）、SVG 类导出、样式预设
-- [ ] v1.0：输入型交互（用户在卡片里选择并把结果传回模型）、规格体积告警
+- [x] v0.3：13 种图型（+ waterfall / heatmap）、`style` 变体、`edit_visual` 局部修改
+- [x] **v1.0**：14 种图型（+ flow）、点选追问、CSV/SVG 导出、reduce-motion、32 个测试、规格冻结
+- [ ] v1.1：sankey / bullet、样式预设、规格体积告警
+- [ ] v1.2：挂起式输入组件（把用户选择作为工具结果回传模型）
+
+## 稳定性
+
+- **公开契约**：spec `version: 3`；`show_visual` / `edit_visual` 与 `style` 词表由测试覆盖；
+- 旧 spec（v1/v2）继续可渲染，历史会话不会因升级打不开；
+- 破坏性改动只在大版本发生，并保持旧 spec 可读。
 
 ## 贡献
 
