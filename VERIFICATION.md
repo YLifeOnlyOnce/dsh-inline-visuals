@@ -121,3 +121,13 @@ profile bundles      → [..., "dsh-inline-visuals"]
 | live 安装 | `install_bundle` → 1.0.0；`show_visual({kind:"flow"})` 成功，文本回退列出节点与边 |
 | live 修改 | `edit_visual({patch:{title,note}})` 正确命中 flow（修复前会跳到更早的 waterfall） |
 | 未验证 | 浏览器内点选/导出交互需人工确认；npm 发布被 token 2FA 权限阻塞（等更新） |
+
+
+## 12. 1.0.0 发布流水线（2026-11-06）
+
+- 包名改为无 scope 的 `dsh-inline-visuals`（原 `@oi-yao/...` scope 在 npm 不存在）；
+- 推 `v1.0.0` tag 后 Publish 工作流成功：测试、构建、打包、`npm publish --provenance`，
+  并创建 GitHub Release `v1.0.0`（附 tarball）；
+- 但 npm 走的是 **staged publishing**：registry 出现 `0.0.0-stage` 占位版本，
+  真实 `1.0.0` 等待人工 2FA 审批（`npm stage approve <stage-id>`）；
+- 审批通过后需重新验证 `npm view dsh-inline-visuals version` 与 `install_bundle` 从 npm 安装。

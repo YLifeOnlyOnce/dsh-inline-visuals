@@ -52,3 +52,22 @@ Actions → **Publish** → *Run workflow*:
 npm view dsh-inline-visuals version dist.tarball
 npx --yes dsh --version   # or the DSH install you use
 ```
+
+## Staged publishing (npm 11+)
+
+If the npm account/package requires proof-of-presence, an automated `npm publish` is **staged**
+instead of published. The registry then shows a temporary `0.0.0-stage` placeholder and the real
+version waits for a human with 2FA to approve it:
+
+```bash
+npm login                                  # 2FA session required
+npm stage list dsh-inline-visuals
+npm stage approve <stage-id>               # publishes the staged version
+```
+
+The workflow still creates the GitHub Release (with the tarball) because staging exits 0.
+After approval, `npm view dsh-inline-visuals version` returns the real version.
+
+To avoid staging on future releases, either approve each run as above, or configure a trusted
+publisher / package access policy that allows token publishes, and keep `npm stage approve` in
+the release checklist.
