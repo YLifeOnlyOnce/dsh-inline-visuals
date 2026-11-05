@@ -118,4 +118,6 @@ profile bundles      → [..., "@oi-yao/dsh-inline-visuals"]
 | 交互 | 点选数据点 → 选中值 chip → 「追问这点」经 `inputActions.captureInsertion/insertText` 插入追问；客户端 bundle 冒烟覆盖注册 |
 | 导出 | 复制 JSON / CSV；Chart.js 图型导出 PNG；heatmap/flow/gantt 导出 SVG |
 | reduce motion | `prefers-reduced-motion: reduce` 时动画时长 0 |
+| live 安装 | `install_bundle` → 1.0.0；`show_visual({kind:"flow"})` 成功，文本回退列出节点与边 |
+| live 修改 | `edit_visual({patch:{title,note}})` 正确命中 flow（修复前会跳到更早的 waterfall） |
 | 未验证 | 浏览器内点选/导出交互需人工确认；npm 发布被 token 2FA 权限阻塞（等更新） |
