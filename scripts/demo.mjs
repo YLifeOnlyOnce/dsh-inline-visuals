@@ -9,6 +9,7 @@
 import { build } from 'esbuild'
 import { execFileSync } from 'node:child_process'
 import { mkdtemp, rm, writeFile, copyFile, mkdir } from 'node:fs/promises'
+import { normalize } from '../src/host/normalize.js'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -31,6 +32,15 @@ const SPECS = {
   scatter: { title: '散点 + 趋势线', kind: 'scatter', style: { trendLine: true }, data: { points: [{ x: 1, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 5 }, { x: 4, y: 4 }, { x: 5, y: 7 }, { x: 6, y: 6 }, { x: 7, y: 9 }, { x: 8, y: 8 }], xLabel: '输入', yLabel: '耗时' } },
   waterfall: { title: '瀑布图 waterfall', kind: 'waterfall', style: { values: true }, data: { labels: ['收入', '成本', '税费'], values: [120, -45, -15], unit: 'k', totalLabel: '净利' } },
 }
+
+const ML_SPECS = {
+  curves: { title: '训练曲线（log y + 平滑）', kind: 'line', style: { yScale: 'log', smoothing: 0.45, points: false, legend: 'bottom', errorBars: true }, data: { labels: ['1', '2', '3', '4', '5', '6', '7', '8'], series: [{ name: 'train loss', values: [2.1, 1.4, 0.95, 0.72, 0.61, 0.55, 0.52, 0.5], errors: [0.12, 0.09, 0.07, 0.05, 0.04, 0.04, 0.03, 0.03] }, { name: 'val loss', values: [2.2, 1.6, 1.1, 0.95, 0.98, 1.05, 1.12, 1.2], errors: [0.15, 0.12, 0.1, 0.08, 0.07, 0.06, 0.06, 0.05] }] } },
+  roc: { title: 'ROC 曲线', kind: 'curve', style: { baseline: true, points: false }, data: { points: [{ x: 0, y: 0 }, { x: 0.05, y: 0.45 }, { x: 0.12, y: 0.68 }, { x: 0.25, y: 0.82 }, { x: 0.45, y: 0.9 }, { x: 0.7, y: 0.96 }, { x: 1, y: 1 }], auc: 0.91, xLabel: 'FPR', yLabel: 'TPR' } },
+  embedding: { title: 'Embedding 聚类', kind: 'scatter', style: { points: true }, data: { series: [{ name: 'cat', points: [{ x: 1, y: 2 }, { x: 1.2, y: 2.3 }, { x: 0.8, y: 1.8 }] }, { name: 'dog', points: [{ x: 4, y: 3 }, { x: 4.3, y: 3.2 }, { x: 3.8, y: 2.7 }] }], xLabel: 't-SNE 1', yLabel: 't-SNE 2' } },
+  histogram: { title: '预测置信度分布', kind: 'histogram', style: { values: true }, data: { values: [0.12, 0.22, 0.31, 0.35, 0.42, 0.47, 0.52, 0.55, 0.61, 0.66, 0.71, 0.75, 0.78, 0.82, 0.85, 0.88, 0.9, 0.93, 0.95, 0.97, 0.98, 0.99], bins: 8 } },
+}
+
+const NORMALIZED_ML = Object.fromEntries(Object.entries(ML_SPECS).map(([key, spec]) => [key, normalize({ kind: spec.kind, title: spec.title, style: spec.style, data: spec.data })]))
 
 const grid = await build({
   entryPoints: [path.join(root, 'src/client/chart-config.js')],
@@ -209,18 +219,123 @@ for (const [key, spec] of Object.entries(SPECS)) {
 </body></html>`
 
 const work = await mkdtemp(path.join(tmpdir(), 'iv-demo-'))
-const page = path.join(work, 'demo.html')
-await writeFile(page, html, 'utf8')
-const raw = path.join(work, 'demo.png')
-try {
+
+async function shoot(htmlText, outName, windowSize) {
+  const page = path.join(work, `${outName}.html`)
+  await writeFile(page, htmlText, 'utf8')
+  const raw = path.join(work, `${outName}.png`)
   execFileSync(CHROME, [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-sandbox',
-    '--force-device-scale-factor=2', '--window-size=1500,2300',
+    '--virtual-time-budget=3000',
+    '--force-device-scale-factor=2', `--window-size=${windowSize}`,
     `--screenshot=${raw}`, `file://${page}`,
   ], { stdio: 'ignore' })
   await mkdir(path.join(root, 'docs'), { recursive: true })
-  await copyFile(raw, path.join(root, 'docs/demo.png'))
-  console.log('docs/demo.png regenerated')
+  await copyFile(raw, path.join(root, 'docs', outName))
+  console.log(`docs/${outName} regenerated`)
+}
+
+const ML_CSS = `
+*{box-sizing:border-box}
+body{margin:0;padding:34px 40px;width:1500px;height:980px;background:#f2f4f7;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;color:#1f2328}
+h1{margin:0 0 4px;font-size:26px}
+.lead{margin:0 0 20px;color:#6b7280;font-size:13.5px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px;height:360px;display:flex;flex-direction:column;
+  box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.card header h2{margin:0;font-size:14px;font-weight:600}
+.card header p{margin:3px 0 10px;color:#8b929c;font-size:11px}
+.body{flex:1;min-height:0;display:flex;flex-direction:column}
+.chart{position:relative;flex:1;min-height:0}
+.note{margin-top:16px;color:#9aa0a6;font-size:11.5px}
+`
+
+const confusionCard = CARD(`
+  <div style="display:flex;gap:18px;align-items:center;justify-content:center">
+    <svg viewBox="0 0 300 220" width="62%">
+      <text x="64" y="16" text-anchor="end" fill="#8b929c" font-size="10">cat</text>
+      <text x="64" y="66" text-anchor="end" fill="#8b929c" font-size="10">dog</text>
+      <text x="64" y="116" text-anchor="end" fill="#8b929c" font-size="10">bird</text>
+      <text x="118" y="8" text-anchor="middle" fill="#8b929c" font-size="10">cat</text>
+      <text x="188" y="8" text-anchor="middle" fill="#8b929c" font-size="10">dog</text>
+      <text x="258" y="8" text-anchor="middle" fill="#8b929c" font-size="10">bird</text>
+      <rect x="88" y="24" width="60" height="44" rx="4" fill="#1f6feb" opacity=".85"/><text x="118" y="52" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">82</text>
+      <rect x="158" y="24" width="60" height="44" rx="4" fill="#1f6feb" opacity=".12"/><text x="188" y="52" text-anchor="middle" fill="#1f2328" font-size="11">12</text>
+      <rect x="228" y="24" width="60" height="44" rx="4" fill="#1f6feb" opacity=".06"/><text x="258" y="52" text-anchor="middle" fill="#1f2328" font-size="11">6</text>
+      <rect x="88" y="74" width="60" height="44" rx="4" fill="#1f6feb" opacity=".1"/><text x="118" y="102" text-anchor="middle" fill="#1f2328" font-size="11">9</text>
+      <rect x="158" y="74" width="60" height="44" rx="4" fill="#1f6feb" opacity=".85"/><text x="188" y="102" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">76</text>
+      <rect x="228" y="74" width="60" height="44" rx="4" fill="#1f6feb" opacity=".08"/><text x="258" y="102" text-anchor="middle" fill="#1f2328" font-size="11">5</text>
+      <rect x="88" y="124" width="60" height="44" rx="4" fill="#1f6feb" opacity=".07"/><text x="118" y="152" text-anchor="middle" fill="#1f2328" font-size="11">4</text>
+      <rect x="158" y="124" width="60" height="44" rx="4" fill="#1f6feb" opacity=".1"/><text x="188" y="152" text-anchor="middle" fill="#1f2328" font-size="11">8</text>
+      <rect x="228" y="124" width="60" height="44" rx="4" fill="#1f6feb" opacity=".8"/><text x="258" y="152" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">64</text>
+    </svg>
+    <div style="color:#8b929c;font-size:10px;line-height:1.6">accuracy 88%<br>macro F1 0.87</div>
+  </div>`, '混淆矩阵 confusion', '分类评估')
+
+const leaderboardCard = CARD(`
+  <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr>
+      <th style="text-align:left;color:#8b929c;font-size:11px;padding:7px 9px;border-bottom:1px solid #e5e7eb">model</th>
+      <th style="text-align:center;color:#8b929c;font-size:11px;padding:7px 9px;border-bottom:1px solid #e5e7eb">acc ↑</th>
+      <th style="text-align:center;color:#8b929c;font-size:11px;padding:7px 9px;border-bottom:1px solid #e5e7eb">F1 ↑</th>
+      <th style="text-align:center;color:#8b929c;font-size:11px;padding:7px 9px;border-bottom:1px solid #e5e7eb">latency ↓ (ms)</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:8px 9px">baseline</td><td style="text-align:center;padding:8px 9px">0.82</td><td style="text-align:center;padding:8px 9px">0.79</td><td style="text-align:center;padding:8px 9px">120</td></tr>
+      <tr><td style="padding:8px 9px">+aug</td><td style="text-align:center;padding:8px 9px">0.87</td><td style="text-align:center;padding:8px 9px">0.85</td><td style="text-align:center;padding:8px 9px">125</td></tr>
+      <tr><td style="padding:8px 9px">ours</td><td style="text-align:center;padding:8px 9px;color:#1a7f37;font-weight:600">0.93</td><td style="text-align:center;padding:8px 9px;color:#1a7f37;font-weight:600">0.91</td><td style="text-align:center;padding:8px 9px;color:#1a7f37;font-weight:600">98</td></tr>
+    </tbody>
+  </table>`, '排行榜 leaderboard', '模型对比')
+
+const mlCards = [
+  chartCard('curves', '训练曲线', 'yScale: log · smoothing 0.45'),
+  chartCard('roc', 'ROC 曲线', 'baseline · AUC 0.91'),
+  chartCard('embedding', 'Embedding 聚类', 'grouped scatter'),
+  chartCard('histogram', '置信度分布', 'histogram · 8 bins'),
+  confusionCard,
+  leaderboardCard,
+].join('\n')
+
+const mlHtml = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>${ML_CSS}</style></head><body>
+<h1>Inline Visuals · 机器学习与论文阅读</h1>
+<p class="lead">训练曲线（log 轴 + EMA 平滑 + 误差棒）、ROC / PR 曲线（AUC + 对角线）、embedding 聚类散点、
+置信度直方图、混淆矩阵、模型排行榜——都能让 Agent 从数据或论文结果直接画出来。</p>
+<div class="grid">
+  ${mlCards}
+</div>
+<p class="note">docs/ml-gallery.png 由 scripts/demo.mjs 生成 · 与卡片渲染共用同一份 Chart.js 配置</p>
+<script>${grid.outputFiles[0].text}</script>
+<script>
+window.onerror = (message, source, line, column, error) => {
+  const pre = document.createElement('pre');
+  pre.id = 'mlerr';
+  pre.style = 'color:red;font-size:14px;white-space:pre-wrap';
+  pre.textContent = message + ' @' + line + ':' + column + '\\n' + (error && error.stack ? error.stack : '');
+  document.body.appendChild(pre);
+};
+const TOKENS = ${JSON.stringify(TOKENS)};
+const ML_SPECS = ${JSON.stringify(NORMALIZED_ML)};
+document.body.dataset.mlStarted = '1';
+document.body.dataset.ivdemo = String(typeof IVDemo);
+document.body.dataset.errors = JSON.stringify(window.__errors || []);
+setTimeout(() => { for (const [key, spec] of Object.entries(ML_SPECS)) {
+  const canvas = document.getElementById('chart-' + key);
+  if (!canvas) { document.body.dataset.mlMissing = (document.body.dataset.mlMissing || '') + key + ','; continue; }
+  try {
+    IVDemo.createChart(canvas, Object.assign({ version: 3, title: spec.title }, spec), TOKENS);
+    canvas.setAttribute('data-drawn', '1'); document.body.dataset.mlDrawn = (document.body.dataset.mlDrawn || '') + key + ',';
+  } catch (error) {
+    canvas.setAttribute('data-error', String(error && error.message ? error.message : error));
+  }
+} }, 0);
+</script>
+</body></html>`
+
+try {
+  await shoot(html, 'demo.png', '1500,2300')
+  await shoot(mlHtml, 'ml-gallery.png', '1500,1010')
 } finally {
-  await rm(work, { recursive: true, force: true })
+  if (process.env.DEBUG_ML) console.log('debug work dir:', work)
+  else await rm(work, { recursive: true, force: true })
 }

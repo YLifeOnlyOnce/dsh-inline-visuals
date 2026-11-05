@@ -19,7 +19,7 @@ Host module generations load on process start; client changes need a page refres
 
 | Parameter | Type | Required | Notes |
 |---|---|---|---|
-| `kind` | string | yes | one of the 14 kinds below |
+| `kind` | string | yes | one of the 18 kinds below |
 | `title` | string | yes | ≤ 120 chars |
 | `subtitle` | string | no | ≤ 160 chars |
 | `note` | string | no | one-sentence takeaway |
@@ -46,6 +46,10 @@ from the durable `tool/result.meta`, so no data is re-sent and replay stays inta
 | `waterfall` | yes | `{ labels: string[], values: number[], unit?, totalLabel? }` (values are deltas) |
 | `heatmap` | yes | `{ rows: string[], columns: string[], values: number[][], unit? }` |
 | `flow` | yes | `{ nodes: [{ id, label, detail? }], edges: [{ from, to, label? }] }` — must be a DAG |
+| `curve` | yes | `{ points: [{ x, y, label? }], auc?: number, xLabel?, yLabel? }` — ROC/PR/calibration |
+| `histogram` | yes | `{ values: number[], bins?: number }` (bins default 10, max 30) |
+| `confusion` | yes | `{ labels: string[], matrix: number[][] }` — square, row = true class |
+| `leaderboard` | yes | `{ metrics: [{ label, better?: "up"|"down", unit? }], rows: [{ name, values: number[] }] }` |
 | `compare` | yes | `{ columns: string[], rows: string[][] }` |
 | `timeline` | yes | `{ items: [{ at?, label, detail? }] }` |
 | `gantt` | yes | `{ tasks: [{ label, start, end, group? }], unit?: string }` |
@@ -66,12 +70,17 @@ from the durable `tool/result.meta`, so no data is re-sent and replay stays inta
 | `height` | 160–420 | chart height |
 | `density` | `compact` / `normal` | card density |
 | `trendLine` | boolean | linear fit for scatter |
+| `xScale` / `yScale` | `linear` / `log` | log axes (training curves, scaling laws); falls back to linear when values are non-positive |
+| `smoothing` | 0–0.9 | EMA smoothing for noisy line/area series (presentation only) |
+| `errorBars` | boolean | draw `series[].errors` whiskers |
+| `baseline` | boolean | draw the y=x diagonal (ROC) |
 
 ## Limits
 
-`labels` ≤ 40, `series` ≤ 6, `rows` ≤ 30, `columns` ≤ 8, `items` ≤ 30, `tasks` ≤ 20, `metrics` ≤ 12,
-`slices` ≤ 12, `points` ≤ 240, heatmap 12×12, flow nodes ≤ 20 / edges ≤ 40. Oversized input is clipped;
-the persisted meta should stay under ~32 KB.
+`labels` ≤ 40, `series` ≤ 6 (with optional `errors`), `rows` ≤ 30, `columns` ≤ 8, `items` ≤ 30,
+`tasks` ≤ 20, `metrics` ≤ 12, `slices` ≤ 12, `points` ≤ 240, heatmap 12×12, confusion 12×12,
+histogram 2000 values, leaderboard 20 rows × 10 metrics, flow nodes ≤ 20 / edges ≤ 40.
+Oversized input is clipped; the persisted meta should stay under ~32 KB.
 
 ## Design
 

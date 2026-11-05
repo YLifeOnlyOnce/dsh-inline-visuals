@@ -64,3 +64,21 @@ test('flow text fallback lists nodes and edges', () => {
   assert.match(out, /- 实现 — 2 天/)
   assert.match(out, /- 规划 → 实现 \(批准后\)/)
 })
+
+
+test('ML text fallbacks', () => {
+  const curve = text({ kind: 'curve', title: 'roc', data: { points: [{ x: 0, y: 0 }, { x: 1, y: 1 }], auc: 0.91 } })
+  assert.match(curve, /AUC: 0.91/)
+
+  const confusion = text({ kind: 'confusion', title: 'c', data: { labels: ['cat', 'dog'], matrix: [[8, 2], [1, 9]] } })
+  assert.match(confusion, /accuracy: 85%/)
+  assert.match(confusion, /cat: recall 80%/)
+
+  const histogram = text({ kind: 'histogram', title: 'h', data: { values: [1, 2, 2, 3], bins: 2 } })
+  assert.match(histogram, /- \[/)
+
+  const leaderboard = text({ kind: 'leaderboard', title: 'l', data: { metrics: [{ label: 'acc' }, { label: 'lat', better: 'down' }], rows: [{ name: 'A', values: [0.9, 120] }, { name: 'B', values: [0.93, 100] }] } })
+  assert.match(leaderboard, /\| A \| 0\.9 \| 120 \|/)
+  assert.match(leaderboard, /\*\*0\.93\*\*/)
+  assert.match(leaderboard, /\*\*100\*\*/)
+})

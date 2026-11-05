@@ -94,6 +94,51 @@ function flowLines(data) {
   return lines
 }
 
+function curveLines(data) {
+  const lines = []
+  if (data.auc !== undefined) lines.push(`- AUC: ${fmt(data.auc)}`)
+  lines.push(...data.points.slice(0, MAX_LINES).map((point) => `- (${fmt(point.x)}, ${fmt(point.y)})${point.label ? ` ${point.label}` : ''}`))
+  if (data.points.length > MAX_LINES) lines.push(`- … (${data.points.length - MAX_LINES} more)`)
+  return lines
+}
+
+function confusionLines(data) {
+  const { labels, matrix } = data
+  const total = matrix.flat().reduce((sum, value) => sum + value, 0)
+  const correct = matrix.reduce((sum, row, index) => sum + (row[index] ?? 0), 0)
+  const accuracy = total > 0 ? correct / total : 0
+  const lines = [`- accuracy: ${Math.round(accuracy * 1000) / 10}% (${correct}/${total})`]
+  labels.forEach((label, index) => {
+    const row = matrix[index] ?? []
+    const rowTotal = row.reduce((sum, value) => sum + value, 0)
+    const recall = rowTotal > 0 ? (row[index] ?? 0) / rowTotal : 0
+    lines.push(`- ${label}: recall ${Math.round(recall * 1000) / 10}% (n=${rowTotal})`)
+  })
+  return lines
+}
+
+function histogramLines(data) {
+  return data.bins.map((bin) => `- [${fmt(bin.start)}, ${fmt(bin.end)}): ${bin.count}`)
+}
+
+function leaderboardLines(data) {
+  const head = `| model | ${data.metrics.map((metric) => metric.label).join(' | ')} |`
+  const rule = `| --- | ${data.metrics.map(() => '---').join(' | ')} |`
+  const best = data.metrics.map((metric, index) => {
+    const values = data.rows.map((row) => row.values[index] ?? 0)
+    return metric.better === 'down' ? Math.min(...values) : Math.max(...values)
+  })
+  const body = data.rows.map((row) => {
+    const cells = data.metrics.map((metric, index) => {
+      const value = row.values[index] ?? 0
+      const text = `${metric.better === 'down' ? '' : ''}${fmt(value, metric.unit)}`
+      return value === best[index] ? `**${text}**` : text
+    })
+    return `| ${row.name} | ${cells.join(' | ')} |`
+  })
+  return [head, rule, ...body]
+}
+
 function metricLines(data) {
   return data.items.map((item) => {
     const arrow = item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : item.trend === 'flat' ? '→' : ''
@@ -117,6 +162,10 @@ const BODIES = {
   waterfall: waterfallLines,
   heatmap: heatmapLines,
   flow: flowLines,
+  curve: curveLines,
+  confusion: confusionLines,
+  histogram: histogramLines,
+  leaderboard: leaderboardLines,
 }
 
 /**

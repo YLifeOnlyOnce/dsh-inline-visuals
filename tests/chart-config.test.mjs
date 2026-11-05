@@ -26,6 +26,8 @@ const SPECS = {
   scatter: { points: [{ x: 1, y: 2 }] },
   radar: { labels: ['A', 'B', 'C'], series: [{ name: 's', values: [1, 2, 3] }] },
   waterfall: { labels: ['a', 'b'], values: [10, -4] },
+  curve: { points: [{ x: 0, y: 0 }, { x: 1, y: 1 }], auc: 0.8 },
+  histogram: { values: [1, 2, 2, 3], bins: 2 },
 }
 
 test('each canvas kind builds a deterministic Chart.js config', () => {
@@ -101,4 +103,36 @@ test('waterfall renders floating bars with a total', () => {
   assert.deepEqual(config.data.datasets[0].data[0], [0, 10])
   assert.deepEqual(config.data.datasets[0].data[1], [10, 6])
   assert.deepEqual(config.data.datasets[0].data[2], [0, 6])
+})
+
+
+test('ML options: log scales, smoothing, error bars, grouped scatter, baseline', () => {
+  const log = buildChartConfig(normalize({
+    kind: 'line',
+    title: 'loss',
+    data: { labels: ['1', '2'], series: [{ name: 'loss', values: [1.2, 0.4], errors: [0.1, 0.05] }] },
+    style: { yScale: 'log', smoothing: 0.5, errorBars: true },
+  }), TOKENS)
+  assert.equal(log.options.scales.y.type, 'logarithmic')
+  assert.deepEqual(log.data.datasets[0].errors, [0.1, 0.05])
+  assert.equal(log.data.datasets[0].data[0], 1.2)
+  assert.equal(log.data.datasets[0].data[1], 0.8)
+  assert.ok(log.plugins.some((plugin) => plugin.id === 'iv-error-bars'))
+
+  const grouped = buildChartConfig(normalize({
+    kind: 'scatter',
+    title: 'embedding',
+    data: { series: [{ name: 'cat', points: [{ x: 1, y: 2 }] }, { name: 'dog', points: [{ x: 2, y: 3 }] }] },
+  }), TOKENS)
+  assert.equal(grouped.data.datasets.length, 2)
+  assert.equal(grouped.data.datasets[1].label, 'dog')
+
+  const curve = buildChartConfig(normalize({ kind: 'curve', title: 'roc', data: SPECS.curve, style: { baseline: true } }), TOKENS)
+  assert.equal(curve.type, 'line')
+  assert.equal(curve.data.datasets.length, 2)
+  assert.equal(curve.data.datasets[1].label, 'baseline')
+
+  const histogram = buildChartConfig(normalize({ kind: 'histogram', title: 'h', data: SPECS.histogram }), TOKENS)
+  assert.equal(histogram.type, 'bar')
+  assert.equal(histogram.data.labels.length, 2)
 })

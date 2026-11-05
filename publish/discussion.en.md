@@ -4,7 +4,7 @@
 
 ## Title
 
-**Plugin: Inline Visuals — replayable charts the model can draw (14 kinds)**
+**Plugin: Inline Visuals — replayable charts the model can draw (18 kinds)**
 
 ## Body
 
@@ -15,7 +15,7 @@ I wanted a chart I could scan — and I wanted it to still be there when I reope
 
 ![demo](../docs/demo.png)
 
-- **14 kinds**: bar / line / area / pie / doughnut / scatter / radar (Chart.js), plus compare / timeline /
+- **18 kinds**: bar / line / area / pie / doughnut / scatter / radar (Chart.js), plus compare / timeline /
   gantt / metrics (hand-written SVG/HTML);
 - the model submits a **declarative spec** (data, not HTML/SVG); the Host normalizes/clips it and persists
   it through `output.presentationMeta` onto `tool/result.meta`;

@@ -19,6 +19,13 @@ const SPECS = {
   waterfall: { labels: ['收入', '成本'], values: [100, -30], unit: 'k' },
   heatmap: { rows: ['a', 'b'], columns: ['x', 'y'], values: [[1, 2], [3, 4]] },
   flow: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], edges: [{ from: 'a', to: 'b' }] },
+  curve: { points: [{ x: 0, y: 0 }, { x: 0.5, y: 0.8 }, { x: 1, y: 1 }], auc: 0.86, xLabel: 'FPR', yLabel: 'TPR' },
+  confusion: { labels: ['cat', 'dog'], matrix: [[8, 2], [1, 9]] },
+  histogram: { values: [1, 2, 2, 3, 4, 5], bins: 3 },
+  leaderboard: {
+    metrics: [{ label: 'acc', better: 'up' }, { label: 'latency', better: 'down', unit: 'ms' }],
+    rows: [{ name: 'A', values: [0.91, 120] }, { name: 'B', values: [0.93, 140] }],
+  },
 }
 
 const roundTrip = (value) => JSON.parse(JSON.stringify(value))
@@ -130,4 +137,32 @@ test('style defaults fill in and invalid values reject', () => {
   assert.throws(() => normalize({ kind: 'bar', title: 't', data: SPECS.bar, style: { orientation: 'diagonal' } }), /style.orientation/)
   assert.throws(() => normalize({ kind: 'bar', title: 't', data: SPECS.bar, style: { palette: 'neon' } }), /style.palette/)
   assert.throws(() => normalize({ kind: 'bar', title: 't', data: SPECS.bar, style: { height: 'tall' } }), /style.height/)
+})
+
+test('ML style fields and their bounds', () => {
+  const value = normalize({
+    kind: 'line',
+    title: 'loss',
+    data: { labels: ['1', '2'], series: [{ name: 'loss', values: [1.2, 0.8], errors: [0.1, 0.05] }] },
+    style: { yScale: 'log', xScale: 'linear', smoothing: 0.5, errorBars: true, baseline: true },
+  })
+  assert.equal(value.style.yScale, 'log')
+  assert.equal(value.style.smoothing, 0.5)
+  assert.equal(value.style.errorBars, true)
+  assert.deepEqual(value.data.series[0].errors, [0.1, 0.05])
+
+  const clamped = normalize({ kind: 'line', title: 'x', data: { labels: ['1'], series: [{ name: 's', values: [1] }] }, style: { smoothing: 5 } })
+  assert.equal(clamped.style.smoothing, 0.9)
+  assert.throws(() => normalize({ kind: 'line', title: 'x', data: SPECS.line, style: { yScale: 'sqrt' } }), /style.yScale/)
+  assert.throws(() => normalize({ kind: 'line', title: 'x', data: SPECS.line, style: { smoothing: 'a' } }), /style.smoothing/)
+})
+
+test('ML data validation: curves, confusion, histogram, leaderboard', () => {
+  assert.throws(() => normalize({ kind: 'curve', title: 'c', data: { points: [{ x: 0, y: 0 }] } }), /at least 2 points/)
+  assert.throws(() => normalize({ kind: 'confusion', title: 'c', data: { labels: ['a', 'b'], matrix: [[1, 2]] } }), /square/)
+  assert.throws(() => normalize({ kind: 'histogram', title: 'h', data: { values: [] } }), /non-empty/)
+  assert.throws(
+    () => normalize({ kind: 'leaderboard', title: 'l', data: { metrics: [{ label: 'x' }], rows: [{ name: 'A', values: [] }] } }),
+    /values\[0\]/,
+  )
 })

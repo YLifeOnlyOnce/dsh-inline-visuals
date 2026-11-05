@@ -6,6 +6,7 @@ const LEGENDS = ['auto', 'bottom', 'top', 'none']
 const DENSITIES = ['compact', 'normal']
 const ORIENTATIONS = ['vertical', 'horizontal']
 const CURVES = ['linear', 'smooth', 'step']
+const SCALES = ['linear', 'log']
 
 function oneOf(value, allowed, field) {
   if (value === undefined) return undefined
@@ -50,6 +51,20 @@ export function normalizeStyle(raw) {
   if (points !== undefined) style.points = points
   const trendLine = bool(raw.trendLine, 'style.trendLine')
   if (trendLine !== undefined) style.trendLine = trendLine
+  const xScale = oneOf(raw.xScale, SCALES, 'style.xScale')
+  if (xScale !== undefined) style.xScale = xScale
+  const yScale = oneOf(raw.yScale, SCALES, 'style.yScale')
+  if (yScale !== undefined) style.yScale = yScale
+  const errorBars = bool(raw.errorBars, 'style.errorBars')
+  if (errorBars !== undefined) style.errorBars = errorBars
+  const baseline = bool(raw.baseline, 'style.baseline')
+  if (baseline !== undefined) style.baseline = baseline
+  if (raw.smoothing !== undefined) {
+    if (typeof raw.smoothing !== 'number' || !Number.isFinite(raw.smoothing)) {
+      throw new TypeError('style.smoothing must be a finite number')
+    }
+    style.smoothing = Math.min(0.9, Math.max(0, raw.smoothing))
+  }
 
   if (raw.height !== undefined) {
     if (typeof raw.height !== 'number' || !Number.isFinite(raw.height)) {

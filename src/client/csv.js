@@ -52,6 +52,17 @@ export function toCsv(spec) {
       return rowsToCsv([[''], ...data.rows.map((row, index) => [row, ...(data.values[index] ?? [])])].map((row, index) => index === 0 ? ['row', ...data.columns] : row))
     case 'flow':
       return rowsToCsv([['from', 'to', 'label'], ...data.edges.map((edge) => [edge.from, edge.to, edge.label ?? ''])])
+    case 'curve':
+      return rowsToCsv([['x', 'y', 'label'], ...data.points.map((point) => [point.x, point.y, point.label ?? ''])])
+    case 'confusion':
+      return rowsToCsv([['label', ...data.labels], ...data.labels.map((label, index) => [label, ...(data.matrix[index] ?? [])])])
+    case 'histogram':
+      return rowsToCsv([['start', 'end', 'count'], ...data.bins.map((bin) => [bin.start, bin.end, bin.count])])
+    case 'leaderboard':
+      return rowsToCsv([
+        ['model', ...data.metrics.map((metric) => metric.label)],
+        ...data.rows.map((row) => [row.name, ...row.values]),
+      ])
     default:
       return undefined
   }

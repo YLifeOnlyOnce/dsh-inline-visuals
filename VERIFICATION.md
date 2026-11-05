@@ -131,3 +131,13 @@ profile bundles      → [..., "dsh-inline-visuals"]
 - 但 npm 走的是 **staged publishing**：registry 出现 `0.0.0-stage` 占位版本，
   真实 `1.0.0` 等待人工 2FA 审批（`npm stage approve <stage-id>`）；
 - 审批通过后需重新验证 `npm view dsh-inline-visuals version` 与 `install_bundle` 从 npm 安装。
+
+
+## 13. v1.1.0（2026-11-06）
+
+| 检查 | 结果 |
+|---|---|
+| `npm test` | 38/38 通过：18 种 kind（含 curve/confusion/histogram/leaderboard）、log 轴、EMA 平滑、误差棒、分组散点、ML 文本/CSV 回退 |
+| 构建 | `index.js` 34.8 KiB；`client.js` 217.4 KiB（Chart.js 内联，react external） |
+| 视觉 | `docs/ml-gallery.png` 用真实 `buildChartConfig` 渲染 6 张 ML 卡片；修复了 Chart.js log 轴注册（`LogarithmicScale` / `"logarithmic"`） |
+| 未验证 | 浏览器内交互与点选追问需人工确认；npm 1.0.0 仍处于 staged 待批准状态 |

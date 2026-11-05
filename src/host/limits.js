@@ -3,6 +3,7 @@
 /** Visual kinds understood by the Host normalizer and the Client renderer. */
 export const KINDS = [
   'bar', 'line', 'area', 'pie', 'doughnut', 'scatter', 'radar', 'waterfall', 'heatmap',
+  'curve', 'confusion', 'histogram', 'leaderboard',
   'compare', 'timeline', 'gantt', 'metrics', 'flow',
 ]
 
@@ -22,6 +23,11 @@ export const STYLE_DEFAULTS = {
   curve: 'smooth',
   points: true,
   trendLine: false,
+  xScale: 'linear',
+  yScale: 'linear',
+  smoothing: 0,
+  errorBars: false,
+  baseline: false,
 }
 
 /** Upper bounds that keep a card readable and its persisted meta small. */
@@ -39,5 +45,10 @@ export const LIMITS = {
   matrixColumns: 12,
   nodes: 20,
   edges: 40,
+  matrixLabels: 12,
+  histogramValues: 2000,
+  histogramBins: 30,
+  leaderboardRows: 20,
+  leaderboardMetrics: 10,
   text: 240,
 }

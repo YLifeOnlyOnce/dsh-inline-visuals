@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 import {
-  Chart, BarController, BarElement, CategoryScale, LinearScale,
+  Chart, BarController, BarElement, CategoryScale, LinearScale, LogarithmicScale,
   LineController, LineElement, PointElement, Filler,
   PieController, ArcElement, DoughnutController,
   RadarController, RadialLinearScale,
@@ -11,7 +11,7 @@ import { fmt } from './format.js'
 import { palette, toAlpha } from './theme.js'
 
 Chart.register(
-  BarController, BarElement, CategoryScale, LinearScale,
+  BarController, BarElement, CategoryScale, LinearScale, LogarithmicScale,
   LineController, LineElement, PointElement, Filler,
   PieController, ArcElement, DoughnutController,
   RadarController, RadialLinearScale,
@@ -19,7 +19,7 @@ Chart.register(
 )
 
 /** Kinds rendered by Chart.js (canvas); everything else is hand-written SVG/HTML. */
-export const CANVAS_KINDS = new Set(['bar', 'line', 'area', 'pie', 'doughnut', 'scatter', 'radar', 'waterfall'])
+export const CANVAS_KINDS = new Set(['bar', 'line', 'area', 'pie', 'doughnut', 'scatter', 'radar', 'waterfall', 'curve', 'histogram'])
 
 function legendDisplay(style, defaultDisplay) {
   if (style.legend === 'none') return false
@@ -60,7 +60,15 @@ function gridStyle(style) {
   return style.grid ? {} : { display: false }
 }
 
-function cartesianScales(tokens, spec, style) {
+function allPositive(values) {
+  return values.length > 0 && values.every((value) => typeof value === 'number' && value > 0)
+}
+
+function axisType(scale, values) {
+  return scale === 'log' && allPositive(values) ? 'logarithmic' : 'linear'
+}
+
+function cartesianScales(tokens, spec, style, yValues, xValues) {
   const unit = spec.data.unit
   const horizontal = style.orientation === 'horizontal'
   const category = {
@@ -68,21 +76,91 @@ function cartesianScales(tokens, spec, style) {
     border: { color: tokens.border },
     ticks: { color: tokens.muted, font: { size: 10 }, maxRotation: 0, autoSkip: true },
   }
-  const linear = {
+  const yType = axisType(style.yScale, yValues ?? [])
+  const xType = axisType(style.xScale, xValues ?? [])
+  const linearY = {
+    type: yType,
     grid: { ...gridStyle(style), color: tokens.border, drawTicks: false },
     border: { color: tokens.border },
     ticks: { color: tokens.muted, font: { size: 10 }, callback: (value) => fmt(Number(value), unit) },
   }
-  const scales = horizontal
-    ? { x: { ...linear, stacked: style.stacked }, y: { ...category, stacked: style.stacked } }
-    : { x: { ...category, stacked: style.stacked }, y: { ...linear, stacked: style.stacked } }
-  return scales
+  const linearX = {
+    type: xType,
+    grid: { ...gridStyle(style), color: tokens.border, drawTicks: false },
+    border: { color: tokens.border },
+    ticks: { color: tokens.muted, font: { size: 10 }, callback: (value) => fmt(Number(value), unit) },
+  }
+  const numericAxis = (base) => ({ ...base, ...(style.xScale === 'log' || style.yScale === 'log' ? {} : {}) })
+  if (horizontal) {
+    return {
+      x: { ...numericAxis(linearX), stacked: style.stacked },
+      y: { ...category, stacked: style.stacked },
+    }
+  }
+  return {
+    x: { ...category, stacked: style.stacked },
+    y: { ...linearY, stacked: style.stacked },
+  }
+}
+
+function smoothSeries(values, amount) {
+  if (!amount) return values
+  let previous
+  return values.map((value) => {
+    previous = previous === undefined ? value : amount * previous + (1 - amount) * value
+    return Math.round(previous * 1000) / 1000
+  })
+}
+
+/** Local plugin: draw symmetric error bars from `dataset.errors`. */
+function errorBars(tokens, style, spec) {
+  return {
+    id: 'iv-error-bars',
+    afterDatasetsDraw(chart) {
+      const horizontal = style.orientation === 'horizontal'
+      const axis = horizontal ? chart.scales.x : chart.scales.y
+      if (!axis) return
+      const { ctx } = chart
+      ctx.save()
+      ctx.strokeStyle = tokens.muted
+      ctx.lineWidth = 1
+      for (const dataset of chart.data.datasets) {
+        if (!dataset.errors) continue
+        const meta = chart.getDatasetMeta(chart.data.datasets.indexOf(dataset))
+        if (meta.hidden) continue
+        meta.data.forEach((element, index) => {
+          const value = typeof dataset.data[index] === 'number' ? dataset.data[index] : dataset.data[index]?.y
+          const error = dataset.errors[index]
+          if (typeof value !== 'number' || typeof error !== 'number' || error <= 0) return
+          const low = axis.getPixelForValue(value - error)
+          const high = axis.getPixelForValue(value + error)
+          if (horizontal) {
+            const x = element.y
+            ctx.beginPath()
+            ctx.moveTo(low, x); ctx.lineTo(high, x)
+            ctx.moveTo(low, x - 4); ctx.lineTo(low, x + 4)
+            ctx.moveTo(high, x - 4); ctx.lineTo(high, x + 4)
+            ctx.stroke()
+          } else {
+            const x = element.x
+            ctx.beginPath()
+            ctx.moveTo(x, low); ctx.lineTo(x, high)
+            ctx.moveTo(x - 4, low); ctx.lineTo(x + 4, low)
+            ctx.moveTo(x - 4, high); ctx.lineTo(x + 4, high)
+            ctx.stroke()
+          }
+        })
+      }
+      ctx.restore()
+    },
+  }
 }
 
 function seriesDatasets(spec, tokens, style, colors) {
   return spec.data.series.map((entry, index) => ({
     label: entry.name,
-    data: entry.values,
+    data: style.smoothing ? smoothSeries(entry.values, style.smoothing) : entry.values,
+    ...(entry.errors === undefined ? {} : { errors: entry.errors }),
     borderColor: colors[index % colors.length],
     backgroundColor: colors[index % colors.length],
     pointBackgroundColor: colors[index % colors.length],
@@ -164,7 +242,8 @@ export function buildChartConfig(spec, tokens) {
   if (kind === 'bar') {
     const options = baseOptions(tokens, style, spec.data.series.length > 1)
     options.indexAxis = style.orientation === 'horizontal' ? 'y' : 'x'
-    options.scales = cartesianScales(tokens, spec, style)
+    const flatValues = spec.data.series.flatMap((entry) => entry.values)
+    options.scales = cartesianScales(tokens, spec, style, flatValues, [])
     options.plugins.tooltip.callbacks = {
       label: (context) => `${context.dataset.label}: ${fmt(context.parsed[style.orientation === 'horizontal' ? 'x' : 'y'], spec.data.unit)}`,
     }
@@ -181,13 +260,17 @@ export function buildChartConfig(spec, tokens) {
         })),
       },
       options,
-      plugins: style.values ? [valueLabels(tokens, spec, style)] : [],
+      plugins: [
+        ...(style.values ? [valueLabels(tokens, spec, style)] : []),
+        ...(style.errorBars ? [errorBars(tokens, style, spec)] : []),
+      ],
     }
   }
 
   if (kind === 'line' || kind === 'area') {
     const options = baseOptions(tokens, style, spec.data.series.length > 1)
-    options.scales = cartesianScales(tokens, spec, style)
+    const flatValues = spec.data.series.flatMap((entry) => entry.values)
+    options.scales = cartesianScales(tokens, spec, style, flatValues, [])
     options.plugins.tooltip.callbacks = {
       label: (context) => `${context.dataset.label}: ${fmt(context.parsed.y, spec.data.unit)}`,
     }
@@ -202,6 +285,82 @@ export function buildChartConfig(spec, tokens) {
             ? toAlpha(colors[index % colors.length], 0.18)
             : toAlpha(colors[index % colors.length], 0),
         })),
+      },
+      options,
+      plugins: [
+        ...(style.values ? [valueLabels(tokens, spec, style)] : []),
+        ...(style.errorBars ? [errorBars(tokens, style, spec)] : []),
+      ],
+    }
+  }
+
+  if (kind === 'curve') {
+    const points = spec.data.points
+    const xs = points.map((point) => point.x)
+    const ys = points.map((point) => point.y)
+    const options = baseOptions(tokens, style, false)
+    options.scales = {
+      x: {
+        type: axisType(style.xScale, xs),
+        grid: { ...gridStyle(style), color: tokens.border, drawTicks: false },
+        border: { color: tokens.border },
+        ticks: { color: tokens.muted, font: { size: 10 } },
+        title: spec.data.xLabel ? { display: true, text: spec.data.xLabel, color: tokens.muted, font: { size: 10 } } : undefined,
+      },
+      y: {
+        type: axisType(style.yScale, ys),
+        grid: { ...gridStyle(style), color: tokens.border, drawTicks: false },
+        border: { color: tokens.border },
+        ticks: { color: tokens.muted, font: { size: 10 }, callback: (value) => fmt(Number(value)) },
+        title: spec.data.yLabel ? { display: true, text: spec.data.yLabel, color: tokens.muted, font: { size: 10 } } : undefined,
+      },
+    }
+    options.plugins.tooltip.callbacks = {
+      label: (context) => `(${fmt(context.parsed.x)}, ${fmt(context.parsed.y)})`,
+    }
+    const datasets = [{
+      label: 'curve',
+      data: points,
+      borderColor: tokens.accent,
+      backgroundColor: toAlpha(tokens.accent, 0.12),
+      borderWidth: 2,
+      pointRadius: style.points ? 3 : 0,
+      pointBackgroundColor: tokens.accent,
+      fill: false,
+      tension: 0,
+    }]
+    if (style.baseline) {
+      datasets.push({
+        label: 'baseline',
+        data: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        borderColor: tokens.idle,
+        borderDash: [4, 4],
+        borderWidth: 1,
+        pointRadius: 0,
+        fill: false,
+      })
+    }
+    return { type: 'line', data: { datasets }, options }
+  }
+
+  if (kind === 'histogram') {
+    const counts = spec.data.bins.map((bin) => bin.count)
+    const options = baseOptions(tokens, style, false)
+    options.scales = cartesianScales(tokens, spec, style, counts, [])
+    options.plugins.tooltip.callbacks = {
+      label: (context) => `${context.parsed.y ?? context.parsed.x} values`,
+    }
+    return {
+      type: 'bar',
+      data: {
+        labels: spec.data.bins.map((bin) => `${fmt(bin.start)}–${fmt(bin.end)}`),
+        datasets: [{
+          label: 'count',
+          data: counts,
+          backgroundColor: toAlpha(tokens.accent, 0.75),
+          borderRadius: 3,
+          maxBarThickness: 36,
+        }],
       },
       options,
       plugins: style.values ? [valueLabels(tokens, spec, style)] : [],
@@ -273,38 +432,55 @@ export function buildChartConfig(spec, tokens) {
 
   if (kind === 'scatter') {
     const options = baseOptions(tokens, style, false)
+    const allPoints = spec.data.series
+      ? spec.data.series.flatMap((entry) => entry.points)
+      : spec.data.points
+    const xs = allPoints.map((point) => point.x)
+    const ys = allPoints.map((point) => point.y)
     options.scales = {
       x: {
-        type: 'linear',
+        type: axisType(style.xScale, xs),
         grid: { ...gridStyle(style), color: tokens.border, drawTicks: false },
         border: { color: tokens.border },
         ticks: { color: tokens.muted, font: { size: 10 } },
         title: spec.data.xLabel ? { display: true, text: spec.data.xLabel, color: tokens.muted, font: { size: 10 } } : undefined,
       },
       y: {
-        type: 'linear',
+        type: axisType(style.yScale, ys),
         grid: { ...gridStyle(style), color: tokens.border, drawTicks: false },
         border: { color: tokens.border },
         ticks: { color: tokens.muted, font: { size: 10 } },
         title: spec.data.yLabel ? { display: true, text: spec.data.yLabel, color: tokens.muted, font: { size: 10 } } : undefined,
       },
     }
+    options.plugins.legend.display = Boolean(spec.data.series) && spec.data.series.length > 1
     options.plugins.tooltip.callbacks = {
       label: (context) => {
         const point = context.raw
-        return point.label ? point.label : `(${fmt(point.x)}, ${fmt(point.y)})`
+        const name = context.dataset.label && context.dataset.label !== 'points' ? `${context.dataset.label}: ` : ''
+        return point.label ? `${name}${point.label}` : `${name}(${fmt(point.x)}, ${fmt(point.y)})`
       },
     }
-    const datasets = [{
-      label: 'points',
-      data: spec.data.points,
-      backgroundColor: toAlpha(tokens.accent, 0.85),
-      borderColor: tokens.surface,
-      borderWidth: 1.5,
-      pointRadius: style.points ? 4 : 2,
-      pointHoverRadius: 6,
-    }]
-    if (style.trendLine) {
+    const datasets = spec.data.series
+      ? spec.data.series.map((entry, index) => ({
+          label: entry.name,
+          data: entry.points,
+          backgroundColor: toAlpha(colors[index % colors.length], 0.85),
+          borderColor: tokens.surface,
+          borderWidth: 1.5,
+          pointRadius: style.points ? 4 : 2,
+          pointHoverRadius: 6,
+        }))
+      : [{
+          label: 'points',
+          data: spec.data.points,
+          backgroundColor: toAlpha(tokens.accent, 0.85),
+          borderColor: tokens.surface,
+          borderWidth: 1.5,
+          pointRadius: style.points ? 4 : 2,
+          pointHoverRadius: 6,
+        }]
+    if (style.trendLine && !spec.data.series) {
       const fit = regression(spec.data.points)
       if (fit) {
         datasets.push({

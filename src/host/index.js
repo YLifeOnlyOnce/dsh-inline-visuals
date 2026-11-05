@@ -11,7 +11,8 @@ export const inject = ['tools']
 
 const DESCRIPTION =
   'Render a small, self-contained visual inside the conversation. Kinds: bar, line, area (chart), '
-  + 'pie, doughnut, scatter, radar, waterfall; compare (table), timeline, gantt, heatmap, metrics (KPI tiles). '
+  + 'pie, doughnut, scatter, radar, waterfall; curve (ROC/PR), histogram, confusion (matrix), '
+  + 'leaderboard; compare (table), timeline, gantt, heatmap, metrics (KPI tiles), flow (DAG). '
   + 'Use `style` for presentation variants (horizontal/stacked bars, stepped lines, palettes, height, '
   + 'data labels, legends). To revise an existing visual, call edit_visual with a partial patch instead '
   + 'of re-sending the whole spec.'
@@ -31,7 +32,10 @@ const STYLE_DESCRIPTION =
   'Presentation-only options. palette: default|mono|cool|warm|success. legend: auto|bottom|top|none. '
   + 'height: 160–420. density: compact|normal. values: draw data labels. grid: show grid lines. '
   + 'orientation: vertical|horizontal (bar). stacked: stack series (bar/line/area). '
-  + 'curve: linear|smooth|step (line/area). points: draw point markers. trendLine: linear fit (scatter).'
+  + 'curve: linear|smooth|step (line/area). points: draw point markers. trendLine: linear fit (scatter). '
+  + 'xScale/yScale: linear|log (log axes for training curves and scaling laws). '
+  + 'smoothing: 0–0.9 EMA smoothing for noisy curves. errorBars: draw errors[] whiskers. '
+  + 'baseline: draw the y=x diagonal (ROC).'
 
 const STYLE_PARAMETERS = {
   type: 'object',
@@ -49,6 +53,11 @@ const STYLE_PARAMETERS = {
     curve: { type: 'string', enum: ['linear', 'smooth', 'step'] },
     points: { type: 'boolean' },
     trendLine: { type: 'boolean' },
+    xScale: { type: 'string', enum: ['linear', 'log'] },
+    yScale: { type: 'string', enum: ['linear', 'log'] },
+    smoothing: { type: 'number', description: 'EMA smoothing 0–0.9 for line/area series.' },
+    errorBars: { type: 'boolean' },
+    baseline: { type: 'boolean' },
   },
 }
 

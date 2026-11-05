@@ -25,3 +25,11 @@ test('waterfall, timeline, gantt, metrics, flow and scatter serialize', () => {
   assert.match(csv({ kind: 'flow', title: 'f', data: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], edges: [{ from: 'a', to: 'b' }] } }), /from,to,label\na,b,/)
   assert.match(csv({ kind: 'scatter', title: 's', data: { points: [{ x: 1, y: 2 }] } }), /x,y,label\n1,2,/)
 })
+
+
+test('ML kinds serialize to CSV', () => {
+  assert.match(csv({ kind: 'curve', title: 'c', data: { points: [{ x: 0, y: 0.1 }, { x: 1, y: 0.9 }] } }), /x,y,label\n0,0\.1,/)
+  assert.match(csv({ kind: 'confusion', title: 'c', data: { labels: ['a', 'b'], matrix: [[1, 2], [3, 4]] } }), /label,a,b\na,1,2\nb,3,4/)
+  assert.match(csv({ kind: 'histogram', title: 'h', data: { values: [1, 2, 3], bins: 2 } }), /start,end,count/)
+  assert.match(csv({ kind: 'leaderboard', title: 'l', data: { metrics: [{ label: 'acc' }], rows: [{ name: 'A', values: [0.9] }] } }), /model,acc\nA,0\.9/)
+})

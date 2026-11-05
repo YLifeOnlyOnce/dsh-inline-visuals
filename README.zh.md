@@ -7,15 +7,14 @@
 ### 让模型在对话里画出可重放的图。
 
 一个 [DeepSeek Harness](https://deepseek-harness.github.io/deepseek-harness/) 插件：把数字变成**对话里的图**——
-柱状图、折线图、对比表、时间线、甘特图、热力图、流程图、KPI 卡片，共 **14 种**，
-还支持样式调整、导出，以及点一下就能追问。
+柱状图、折线图、对比表、时间线、甘特图、热力图、流程图、KPI 卡片，共 **18 种**，还支持样式调整、导出、点一下就能追问，并为机器学习与论文阅读做了专门优化。
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![dsh](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.3-1f6feb.svg)](https://deepseek-harness.github.io/deepseek-harness/)
-[![kinds](https://img.shields.io/badge/kinds-14-0a6b3d.svg)](#它能画什么)
+[![kinds](https://img.shields.io/badge/kinds-18%20%C2%B7%20ML-0a6b3d.svg)](#它能画什么)
 [![ci](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml/badge.svg)](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml)
 
-![14 种图型](docs/demo.png)
+![18 种图型](docs/demo.png)
 
 ## 为什么你会喜欢它
 
@@ -24,6 +23,8 @@
 - **想问就问。** 点一下图上的数据点，输入框自动出现一条针对性的追问。
 - **说一句就能改。** 「改成横向、堆叠、加数值」——Agent 用 `edit_visual` 打补丁，而不是重画整张图。
 - **原生、安全。** 跟随宿主主题（深浅色、中英文）；模型提交的是**数据**，不是 HTML/JS。
+- **为 ML 和读论文而生。** 训练曲线（log 轴 + 平滑 + 误差棒）、ROC/PR（AUC + 对角线）、
+  混淆矩阵、模型排行榜、embedding 聚类散点、置信度直方图。
 - **方便分享。** 复制 JSON/CSV，导出 PNG/SVG。
 
 ## 30 秒安装
@@ -57,11 +58,30 @@ plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 | | |
 |---|---|
 | **图表** | bar · line · area · pie · doughnut · scatter · radar · waterfall |
+| **ML / 论文** | 训练曲线 · ROC/PR 曲线 · 混淆矩阵 · 直方图 · 模型排行榜 · embedding 散点 |
 | **其他** | 对比表 · 时间线 · 甘特图 · 热力图 · 流程图 · KPI 卡片 |
 
-每张图都支持**样式**：横向/堆叠、阶梯线、数值标签、图例、网格、5 套配色、高度/密度、散点趋势线。
+每张图都支持**样式**：横向/堆叠、阶梯线、数值标签、图例、网格、5 套配色、高度/密度、散点趋势线、
+log 轴、EMA 平滑、误差棒。
 
 ![接入前后](docs/before-after.png)
+
+
+## 为机器学习与论文阅读而生
+
+![ML 图库](docs/ml-gallery.png)
+
+读论文或看训练日志时，直接让 Agent 画：
+
+> **「把 8 个 epoch 的 train/val loss 画成 log 轴、带平滑和误差棒的曲线。」**
+
+> **「用这些点画 ROC 曲线，标出 AUC。」**
+
+> **「把这个表格画成 cat/dog/bird 的混淆矩阵。」**
+
+> **「对比这四个模型的 accuracy、F1 和延迟，标出最好的。」**
+
+> **「把这些 embedding 按类别聚类，画 t-SNE 散点。」**
 
 ## 它是怎么工作的（一句话）
 
@@ -84,8 +104,8 @@ plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 
 ## 工程与可信度
 
-- 33 个测试（`node:test`），每次 push 跑 CI，tag 触发 npm 发布（带 provenance）
-- Host 半约 26 KB；浏览器半是单文件（约 214 KB，Chart.js 内联，React 与宿主共享）
+- 38 个测试（`node:test`），每次 push 跑 CI，tag 触发 npm 发布（带 provenance）
+- Host 半约 35 KB；浏览器半是单文件（约 217 KB，Chart.js 内联，React 与宿主共享）
 - 规格 `version: 3` 已冻结，v1/v2 旧规格仍可渲染
 
 完整参数、限制与开发说明：**[docs/reference.zh.md](docs/reference.zh.md)**（[English reference](docs/reference.md)）。

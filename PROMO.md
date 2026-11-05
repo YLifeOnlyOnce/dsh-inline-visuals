@@ -5,7 +5,7 @@
 
 ## 定位（一句话）
 
-- 中文：**让模型在对话里画出可重放的图**——14 种图型，不是截图，是存在会话日志里、刷新重开都还在的卡片。
+- 中文：**让模型在对话里画出可重放的图**——18 种图型，不是截图，是存在会话日志里、刷新重开都还在的卡片。
 - English: **Charts the model can draw, and the session can replay** — 11 visual kinds, not a screenshot.
 
 ## 目标人群
@@ -33,7 +33,7 @@
 
 ### EN · X thread（3 条）
 
-1. > DSH plugin: `show_visual` lets the model draw **14 kinds** of visuals inside the chat —
+1. > DSH plugin: `show_visual` lets the model draw **18 kinds** of visuals inside the chat —
    > bar/line/area/pie/doughnut/scatter/radar (Chart.js) plus compare tables, timelines, gantt and KPI tiles.
    > Spec is persisted on the tool result, so replay needs no model call. MIT. → <repo>
 2. > Why not let the model emit SVG/HTML? Because it must be replayable and theme-safe.
@@ -44,7 +44,7 @@
 
 ### EN · Reddit / HN / forum（一段）
 
-> **A DSH plugin that turns model output into 14 kinds of replayable visuals**
+> **A DSH plugin that turns model output into 18 kinds of replayable visuals**
 >
 > DSH's tool results are durable session events, so I built `show_visual`: the model submits a small
 > declarative spec (7 Chart.js kinds, plus compare tables, timelines, gantt and KPI tiles), the Host
@@ -64,7 +64,7 @@
 ### ZH · 即刻 / 朋友圈（一段）
 
 > 周末给 DeepSeek Harness 写了个插件 `dsh-inline-visuals`：模型不再只回你五段数字，而是调用
-> `show_visual` 画一张卡片——14 种图型（柱状/折线/饼/散点/雷达、对比表、时间线、甘特、KPI）。
+> `show_visual` 画一张卡片——18 种图型（柱状/折线/饼/散点/雷达、对比表、时间线、甘特、KPI）。
 > 关键是它把规格持久化在会话日志里，刷新、重开、fork 都能重放，不用二次调模型。
 > Chart.js 内联进单文件、React 用宿主的；声明式规格不执行代码，主题 token + 中英文案，
 > 有测试和 CI。想听大家的意见：v0.3 该先加 heatmap 还是 flow？
