@@ -3,6 +3,8 @@
 The publish pipeline is [`.github/workflows/publish.yml`](.github/workflows/publish.yml):
 pushing a tag `v<version>` runs tests, rebuilds the artifacts, checks they are committed,
 packs, publishes to npm with provenance, and creates a GitHub Release with the tarball.
+Release notes are read from [`publish/release-notes/<tag>.md`](publish/release-notes/) when present,
+otherwise generated from commits.
 
 ## One-time setup
 

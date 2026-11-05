@@ -201,6 +201,7 @@ src/host/              Host 源码：limits / normalize / text / index
 src/client/            Client 源码：theme、use-theme、chart-config、cards/*
 scripts/build.mjs      esbuild 构建：index.js（ESM）+ client.js（单文件，Chart.js 内联、react external）
 scripts/demo.mjs       生成 docs/demo.png（本地 Chrome，维护者脚本）
+publish/              发布素材：release notes、公告、社区讨论稿、上线清单
 tests/                 node:test：normalize / text / chart-config
 .github/workflows/ci.yml  npm ci → test → build → 校验产物无漂移
 ```
