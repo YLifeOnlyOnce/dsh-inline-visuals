@@ -9,7 +9,7 @@
 2. > Why not let the model emit SVG/HTML? Because it must be replayable and theme-safe.
    > The model emits *data*; the plugin renders with host theme tokens. Refresh, reopen, fork — same card.
    > Non-Web clients get a compact text fallback.
-3. > Install: `plugin_manager install_bundle @oi-yao/dsh-inline-visuals` · one-file runtime
+3. > Install: `plugin_manager install_bundle dsh-inline-visuals` · one-file runtime
    > (Chart.js inlined, React external) · 12 tests · CI + npm provenance.
    > Feedback welcome: what should v0.3 add — heatmap, flow or sankey?
 

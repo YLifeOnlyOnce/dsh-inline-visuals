@@ -54,7 +54,7 @@ and the style vocabulary below are treated as stable; older specs (v1/v2) remain
 
 ### Changed
 
-- **Package renamed** from `@community/dsh-inline-visuals` to `@oi-yao/dsh-inline-visuals`,
+- **Package renamed** from `@community/dsh-inline-visuals` to `dsh-inline-visuals`,
   so it can be installed directly from npm (`plugin_manager install_bundle`).
 - Publishing pipeline: tag-triggered GitHub Actions workflow with tests, artifact freshness check,
   `npm publish --provenance`, and a GitHub Release carrying the tarball (see `RELEASING.md`).

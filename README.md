@@ -33,14 +33,14 @@ gantt, heatmaps, flows and KPI tiles — 14 kinds, with styles, exports and clic
 Inside a DSH session, paste one line:
 
 ```text
-plugin_manager({ action: "install_bundle", target: "github:YLifeOnlyOnce/dsh-inline-visuals" })
+plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 ```
 
-That's it. You should see `show_visual` (and `edit_visual`) among your agent's tools.
+No clone, no configuration. You should see `show_visual` (and `edit_visual`) among your agent's tools.
 
-> The npm package `@oi-yao/dsh-inline-visuals` is on the way — this GitHub one-liner works today.
-> Requires DeepSeek Harness `v0.2.1-rc.3` or newer. Contributors can also clone and point
-> Plugin Manager at the local folder (see the [technical reference](docs/reference.md)).
+> Requires DeepSeek Harness `v0.2.1-rc.3` or newer. Prefer source? Use
+> `github:YLifeOnlyOnce/dsh-inline-visuals`, or point Plugin Manager at a local clone
+> (see the [technical reference](docs/reference.md)).
 
 ## Try it
 

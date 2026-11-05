@@ -28,10 +28,10 @@ I wanted a chart I could scan — and I wanted it to still be there when I reope
 **Install** (DSH ≥ v0.2.1-rc.3):
 
 ```text
-plugin_manager({ action: "install_bundle", target: "@oi-yao/dsh-inline-visuals" })
+plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 ```
 
-From GitHub (no npm publish needed): `target: "github:YLifeOnlyOnce/dsh-inline-visuals"`.
+From GitHub instead: `target: "github:YLifeOnlyOnce/dsh-inline-visuals"`.
 
 **Engineering**: `src/` + esbuild build, 12 `node:test` cases, GitHub Actions CI, tag-triggered npm
 provenance publishing and a GitHub Release carrying the tarball. MIT.

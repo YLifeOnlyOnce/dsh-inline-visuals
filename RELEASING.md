@@ -12,7 +12,7 @@ otherwise generated from commits.
 2. **First publish** (before Trusted Publishing exists for a new package), either:
    - publish once from a maintainer machine: `npm login && npm publish --access public`, or
    - add a repository secret `NPM_TOKEN` (granular token with *read and write* on
-     `@oi-yao/dsh-inline-visuals`) and run the **Publish** workflow manually with
+     `dsh-inline-visuals`) and run the **Publish** workflow manually with
      `dry_run = false`.
 3. **Configure Trusted Publishing** on npmjs.com → package → Settings → Trusted Publisher:
    - Provider: GitHub Actions
@@ -49,6 +49,6 @@ Actions → **Publish** → *Run workflow*:
 ## Verify a release
 
 ```bash
-npm view @oi-yao/dsh-inline-visuals version dist.tarball
+npm view dsh-inline-visuals version dist.tarball
 npx --yes dsh --version   # or the DSH install you use
 ```

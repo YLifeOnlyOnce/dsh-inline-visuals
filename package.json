@@ -1,5 +1,5 @@
 {
-  "name": "@oi-yao/dsh-inline-visuals",
+  "name": "dsh-inline-visuals",
   "version": "1.0.0",
   "description": "Inline, replayable visuals for DeepSeek Harness: 14 chart, table, timeline, gantt, heatmap, flow and KPI kinds with presentation styles, click-to-ask interaction and agent-driven edit_visual patches.",
   "type": "module",

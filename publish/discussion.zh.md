@@ -25,10 +25,10 @@
 **安装**（DSH ≥ v0.2.1-rc.3）：
 
 ```text
-plugin_manager({ action: "install_bundle", target: "@oi-yao/dsh-inline-visuals" })
+plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 ```
 
-从 GitHub 装（不用等 npm）：`target: "github:YLifeOnlyOnce/dsh-inline-visuals"`。
+也可以从 GitHub 装：`target: "github:YLifeOnlyOnce/dsh-inline-visuals"`。
 
 **工程化**：`src/` + esbuild 构建、12 个 node:test 测试、GitHub Actions CI、tag 触发 npm provenance 发布、GitHub Release 附带 tarball。MIT。
 

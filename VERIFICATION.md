@@ -8,7 +8,7 @@
 ```text
 plugin_manager({ action: "install_bundle", target: "/Users/xiangbo/AAAAAgent/zero/dsh-inline-visuals" })
 → application: "applied" · warnings: [] · pnpm exit 0
-→ profile 依赖：{"@oi-yao/dsh-inline-visuals": "link:.../dsh-inline-visuals"}
+→ profile 依赖：{"dsh-inline-visuals": "link:.../dsh-inline-visuals"}
 ```
 
 ## 2. 工具注册
@@ -74,9 +74,9 @@ normalize.test.mjs: all checks passed
 
 ```text
 plugin_manager remove_bundle @community/dsh-inline-visuals   → applied
-plugin_manager install_bundle /abs/path/dsh-inline-visuals  → applied · @oi-yao/dsh-inline-visuals 0.2.0
-profile dependencies → {"@oi-yao/dsh-inline-visuals": "link:.../dsh-inline-visuals"}
-profile bundles      → [..., "@oi-yao/dsh-inline-visuals"]
+plugin_manager install_bundle /abs/path/dsh-inline-visuals  → applied · dsh-inline-visuals 0.2.0
+profile dependencies → {"dsh-inline-visuals": "link:.../dsh-inline-visuals"}
+profile bundles      → [..., "dsh-inline-visuals"]
 ```
 
 **live 证据**：调用 `show_visual({ kind: "pie", ... })` 成功（v0.1 不支持该 kind），

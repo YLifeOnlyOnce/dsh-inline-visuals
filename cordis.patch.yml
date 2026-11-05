@@ -2,4 +2,4 @@
 # loads the browser half that renders the card in `tool.call.toolview`.
 - insert:
     - id: inline-visuals
-      name: '@oi-yao/dsh-inline-visuals'
+      name: 'dsh-inline-visuals'

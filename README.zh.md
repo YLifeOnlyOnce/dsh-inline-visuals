@@ -31,14 +31,14 @@
 在 DSH 会话里贴一行：
 
 ```text
-plugin_manager({ action: "install_bundle", target: "github:YLifeOnlyOnce/dsh-inline-visuals" })
+plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 ```
 
-看到 `show_visual`（和 `edit_visual`）出现在工具列表里就成功了。
+不用 clone、不用配置。看到 `show_visual`（和 `edit_visual`）出现在工具列表里就成功了。
 
-> npm 包 `@oi-yao/dsh-inline-visuals` 正在发布中——上面这条 GitHub 安装现在就能用。
-> 需要 DeepSeek Harness `v0.2.1-rc.3` 或更高版本。贡献者也可以 clone 到本地，
-> 把绝对路径交给 Plugin Manager（见[技术参考](docs/reference.zh.md)）。
+> 需要 DeepSeek Harness `v0.2.1-rc.3` 或更高版本。想从源码装？用
+> `github:YLifeOnlyOnce/dsh-inline-visuals`，或把本地 clone 的绝对路径交给 Plugin Manager
+> （见[技术参考](docs/reference.zh.md)）。
 
 ## 试试看
 

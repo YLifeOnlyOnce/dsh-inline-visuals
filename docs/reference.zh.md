@@ -5,14 +5,13 @@
 
 ![Inline Visuals banner](banner.png)
 
-**让模型在对话里画出可重放的图。** · A DeepSeek Harness plugin that renders small, replayable
-14 kinds of charts/tables/timelines/gantt/heatmaps/flows/KPI tiles, with presentation styles,
-click-to-ask drill-down, and an `edit_visual` tool the agent can use to revise a previous visual by patching it.
+让模型在对话里画出可重放的图 —— 14 种图型、可调样式、点选追问、Agent 可改图。
+本页是完整技术参考（安装、参数、限制、开发与发布）。
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![dsh](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.3-1f6feb.svg)](https://deepseek-harness.github.io/deepseek-harness/)
 [![kinds](https://img.shields.io/badge/kinds-14%20visuals%20%C2%B7%20styles-0a6b3d.svg)](#它能画什么)
-[![npm](https://img.shields.io/npm/v/@oi-yao/dsh-inline-visuals?label=npm&color=cb3837)](https://www.npmjs.com/package/@oi-yao/dsh-inline-visuals)
+[![npm](https://img.shields.io/npm/v/dsh-inline-visuals?label=npm&color=cb3837)](https://www.npmjs.com/package/dsh-inline-visuals)
 [![ci](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml/badge.svg)](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml)
 
 模型不再只回你五段数字——它调用 `show_visual` 工具，提交一份**声明式规格**（不是 HTML、不是 SVG 代码），
@@ -36,7 +35,7 @@ DSH 把它存进会话日志，前端渲染成一张跟随主题的卡片。刷�
 ### 方式 A · 在 DSH 里一行装（推荐，无需终端）
 
 ```text
-plugin_manager({ action: "install_bundle", target: "@oi-yao/dsh-inline-visuals" })
+plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 ```
 
 看到 `application: "applied"` 即成功；如果提示 `already-installed`，先
@@ -243,7 +242,7 @@ Client 在 tool.call.toolview(key=show_visual) 渲染
 卸载：
 
 ```text
-plugin_manager({ action: "remove_bundle", target: "@oi-yao/dsh-inline-visuals" })
+plugin_manager({ action: "remove_bundle", target: "dsh-inline-visuals" })
 ```
 
 历史会话里已渲染的卡片会回退为通用工具行（`meta` 仍留在日志里，数据不丢）。

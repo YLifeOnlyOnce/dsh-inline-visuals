@@ -6,10 +6,11 @@
 ## Install
 
 ```text
-plugin_manager({ action: "install_bundle", target: "github:YLifeOnlyOnce/dsh-inline-visuals" })
+plugin_manager({ action: "install_bundle", target: "dsh-inline-visuals" })
 ```
 
-or npx/npm (once published): `@oi-yao/dsh-inline-visuals`. Requirements: DSH ≥ `v0.2.1-rc.3`.
+Also works from GitHub (`github:YLifeOnlyOnce/dsh-inline-visuals`) or a local clone.
+Requirements: DSH ≥ `v0.2.1-rc.3`.
 Host module generations load on process start; client changes need a page refresh.
 
 ## Tools

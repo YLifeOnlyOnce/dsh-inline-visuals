@@ -25,7 +25,7 @@ test('client.js registers the tool view through the Harness module loader', asyn
   vm.runInContext(source, sandbox, { filename: 'client.js' })
 
   assert.ok(captured, 'client.js must call window.__ModuleLoader__.load')
-  assert.equal(captured.id, '@oi-yao/dsh-inline-visuals')
+  assert.equal(captured.id, 'dsh-inline-visuals')
 
   const react = {
     createElement: (...args) => ({ args }),
