@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: MIT */
 /**
  * Browser half of `@community/dsh-inline-visuals`.
  *

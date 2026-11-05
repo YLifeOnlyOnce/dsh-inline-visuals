@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: MIT */
 /**
  * Host half of `@community/dsh-inline-visuals`.
  *
