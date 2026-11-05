@@ -151,3 +151,17 @@ profile bundles      → [..., "dsh-inline-visuals"]
 | curve | `show_visual({kind:"curve", points, auc:0.91, style:{baseline:true}})` 成功，文本回退含 `AUC: 0.91` |
 | leaderboard | `show_visual({kind:"leaderboard", metrics:[...], rows:[...]})` 成功，文本回退为 Markdown 表并加粗最优值（acc 0.93 / F1 0.91 / latency 98ms） |
 | 未验证 | 浏览器内 canvas 卡片（log 轴、误差棒、分组散点）与点选追问需人工刷新页面确认 |
+
+
+## 15. 卡片空白修复（2026-11-06）
+
+用户截图显示工具卡片渲染成「没有可渲染的数据」。核对会话日志：
+
+```
+(3152, version=3, kind='curve',  ...)
+(3158, version=3, kind='leaderboard', ...)
+```
+
+根因：`InlineVisual` 只接受 `version === 1 || version === 2`，而 v0.3 起规格版本已升到 `3`。
+已抽出 `src/client/spec.js#isSupportedSpec`（接受所有 `version >= 1`），并补 `tests/spec.test.mjs`
+覆盖 v1/v2/v3 与非法值；测试总数 **40**。客户端改动刷新页面即可生效。

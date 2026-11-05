@@ -7,6 +7,7 @@ import { useThemeVersion } from '../use-theme.js'
 import { fmt } from '../format.js'
 import { buildFollowUp } from '../follow-up.js'
 import { toCsv } from '../csv.js'
+import { isSupportedSpec } from '../spec.js'
 import { ChartCanvas } from './ChartCanvas.js'
 import { Compare } from './Compare.js'
 import { Confusion } from './Confusion.js'
@@ -73,8 +74,8 @@ export function InlineVisual(props) {
     }, t('loading'))
   }
 
-  // Version 1 (v0.1) specs keep rendering: replay compatibility matters more than strictness.
-  if (!spec || typeof spec !== 'object' || (spec.version !== 1 && spec.version !== 2)) {
+  // Accept every spec version >= 1 so historical cards and future additive fields keep replaying.
+  if (!isSupportedSpec(spec)) {
     return h('div', {
       style: {
         border: `1px solid ${tokens.border}`,
