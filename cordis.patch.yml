@@ -1,0 +1,5 @@
+# One row: the Host half registers `show_visual`; the package's `dsh.client` section
+# loads the browser half that renders the card in `tool.call.toolview`.
+- insert:
+    - id: inline-visuals
+      name: '@community/dsh-inline-visuals'

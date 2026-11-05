@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "title": "Inline Visuals",
+    "description": "Render small, replayable charts, comparison tables, and timelines inside the conversation."
+  },
+  "copy": "Copy data",
+  "copied": "Copied",
+  "showData": "Show data",
+  "hideData": "Hide data",
+  "empty": "No data to render",
+  "loading": "Rendering visual…"
+}
