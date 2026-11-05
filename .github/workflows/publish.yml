@@ -59,11 +59,21 @@ jobs:
             console.log(`publishing ${pkg.name}@${pkg.version}`);
           '
 
+      - name: Check whether this version is already published
+        id: npm-version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "dsh-inline-visuals@${VERSION}" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Pack
         run: npm pack
 
       - name: Require NPM_TOKEN
-        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        if: steps.npm-version.outputs.published == 'false' && (startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -78,7 +88,7 @@ jobs:
         run: npm publish --dry-run --access public
 
       - name: Publish to npm
-        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        if: steps.npm-version.outputs.published == 'false' && (startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
         env:
           # Repository secret NPM_TOKEN (granular token with read+write on @oi-yao).
           # setup-node writes the matching .npmrc entry for the npm registry.

@@ -20,6 +20,7 @@ confusion matrices, leaderboards and embedding clusters. With styles, exports an
 
 ## Why you'll like it
 
+- **Figures in the answer, not just the tool log.** The final chart of a turn lands beneath the reply.
 - **See it, don't read it.** "Three caching strategies, compared" becomes a card you scan in two seconds.
 - **It stays.** The card is stored in the session log — refresh, reopen, branch the session, it is still there.
 - **Ask, don't retype.** Click any data point, get a one-click follow-up prompt in your composer.

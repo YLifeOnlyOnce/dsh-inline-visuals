@@ -43,24 +43,27 @@ test('client.js registers the tool view through the Harness module loader', asyn
     throw new Error(`unexpected external require: ${name}`)
   })
   assert.equal(typeof exported.apply, 'function')
-  assert.deepEqual(Array.from(exported.inject), ['slots', 'locale'])
+  assert.deepEqual(Array.from(exported.inject), ['slots', 'locale', 'uiConversation'])
 
   const views = []
+  const injected = []
   const ctx = {
     effect: (fn) => fn(),
     locale: { register: () => () => {}, bind: () => (key) => key },
+    uiConversation: { events: { register: () => () => {} } },
     slots: {
       inject: (key, callback) => {
-        assert.equal(key, 'tool.call.toolview')
+        injected.push(key)
         const disposer = callback()
         assert.equal(typeof disposer, 'function')
       },
       register: (options) => {
-        views.push(options.key)
+        views.push(options.key ?? options.id)
         return () => {}
       },
     },
   }
   exported.apply(ctx)
-  assert.deepEqual(views, ['show_visual', 'edit_visual'])
+  assert.deepEqual(Array.from(views), ['show_visual', 'edit_visual', 'inline-visuals'])
+  assert.deepEqual(Array.from(injected), ['tool.call.toolview', 'conversation.chat.turnTail'])
 })

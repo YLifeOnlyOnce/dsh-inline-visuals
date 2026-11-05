@@ -3,6 +3,8 @@
 import React from 'react'
 import { InlineVisual } from './cards/InlineVisual.js'
 import { COPY, NS, fallbackCopy } from './locale.js'
+import { visualTurnDefinition } from './turn.js'
+import { TurnVisual } from './turn-card.js'
 
 const h = React.createElement
 
@@ -34,7 +36,7 @@ class Boundary extends React.Component {
 }
 
 const plugin = {
-  inject: ['slots', 'locale'],
+  inject: ['slots', 'locale', 'uiConversation'],
   apply(ctx) {
     let translate = ((copy = fallbackCopy()) => (key) => copy[key] || key)()
     try {
@@ -59,6 +61,16 @@ const plugin = {
         for (const dispose of disposers) dispose?.()
       }
     })
+
+    // Publish settled visuals per Turn and render the final one in the answer
+    // body (turn tail), so figures are visible outside the collapsible Tool group.
+    ctx.effect(() => ctx.uiConversation.events.register(visualTurnDefinition()), 'inline-visuals: turn definition')
+    ctx.slots.inject('conversation.chat.turnTail', () => ctx.slots.register({
+      name: 'conversation.chat.turnTail',
+      id: 'inline-visuals',
+      order: 30,
+      locale: NS,
+    }, TurnVisual))
   },
 }
 

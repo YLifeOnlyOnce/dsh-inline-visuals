@@ -165,3 +165,13 @@ profile bundles      → [..., "dsh-inline-visuals"]
 根因：`InlineVisual` 只接受 `version === 1 || version === 2`，而 v0.3 起规格版本已升到 `3`。
 已抽出 `src/client/spec.js#isSupportedSpec`（接受所有 `version >= 1`），并补 `tests/spec.test.mjs`
 覆盖 v1/v2/v3 与非法值；测试总数 **40**。客户端改动刷新页面即可生效。
+
+
+## 16. 正文区图表（2026-11-06）
+
+- 新增 Turn Definition（`src/client/turn.js`）：按 Turn 聚合 append-origin `tool/result.meta` 中的视觉规格；
+- `conversation.chat.turnTail` 注册 `inline-visuals` entry（order 30），渲染本轮**最后一张**图，
+  位于回答正文下方、工具分组之外；`edit_visual` 的多次修订只保留最终图；
+- 复用 `InlineVisual` 卡片（主题、导出、点选追问均可用）；`turn.js` 纯函数有单测
+  （匹配规则、错误过滤、bound 过滤、修订收敛）；
+- 测试总数 **43**。

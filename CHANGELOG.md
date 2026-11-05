@@ -44,6 +44,9 @@ and the style vocabulary below are treated as stable; older specs (v1/v2) remain
   only a patch — nested objects merge, arrays replace, `null` deletes. It reads the previous spec
   from the session log, so no data is re-sent and replay stays intact.
 - Client renders `edit_visual` cards with the same renderer as `show_visual`.
+- **Figures in the answer body**: settled visuals are published per Turn and the final one renders
+  in the `conversation.chat.turnTail` seat beneath the closing prose, so charts are visible outside
+  the collapsible Tool group. Repeated `edit_visual` revisions collapse into the last figure.
 
 ### Changed
 
