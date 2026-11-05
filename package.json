@@ -28,12 +28,13 @@
     "./icon": "./icon.svg"
   },
   "files": [
+    "README.md",
+    "README.zh.md",
     "index.js",
     "client.js",
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
-    "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
