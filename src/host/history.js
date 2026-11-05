@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 
-const VISUAL_KINDS = new Set([
-  'bar', 'line', 'area', 'pie', 'doughnut', 'scatter', 'radar', 'waterfall', 'heatmap',
-  'compare', 'timeline', 'gantt', 'metrics',
-])
+import { KINDS } from './limits.js'
+
+// Single source of truth: adding a kind must not require editing the history lookup.
+const VISUAL_KINDS = new Set(KINDS)
 
 function isVisualMeta(meta) {
   return meta !== null && typeof meta === 'object' && VISUAL_KINDS.has(meta.kind) && meta.data !== undefined

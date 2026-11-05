@@ -49,21 +49,7 @@ var LIMITS = {
 };
 
 // src/host/history.js
-var VISUAL_KINDS = /* @__PURE__ */ new Set([
-  "bar",
-  "line",
-  "area",
-  "pie",
-  "doughnut",
-  "scatter",
-  "radar",
-  "waterfall",
-  "heatmap",
-  "compare",
-  "timeline",
-  "gantt",
-  "metrics"
-]);
+var VISUAL_KINDS = new Set(KINDS);
 function isVisualMeta(meta) {
   return meta !== null && typeof meta === "object" && VISUAL_KINDS.has(meta.kind) && meta.data !== void 0;
 }

@@ -29,3 +29,10 @@ test('tolerates empty or unusual sessions', () => {
   assert.equal(findPreviousSpec({ events: [] }, 'last'), undefined)
   assert.equal(findPreviousSpec({ ownEvents: () => [] }, 'last'), undefined)
 })
+
+
+test('flow specs are found like any other kind', () => {
+  const flow = { version: 3, kind: 'flow', title: 'f', data: { nodes: [{ id: 'a', label: 'A' }], edges: [] } }
+  const session = { ownEvents: () => [event('c1', flow)] }
+  assert.equal(findPreviousSpec(session, 'last').kind, 'flow')
+})
