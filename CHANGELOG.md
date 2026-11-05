@@ -21,7 +21,8 @@ All notable changes to this project are documented here. The format follows
 
 - Client artifact is now generated: Chart.js is bundled, React stays external from the host
   module table (`requires` the host loader).
-- Spec version bumped to `2` (the renderer checks `version !== 2`); v0.1 specs are not read.
+- Spec version bumped to `2`; the renderer still accepts `version: 1` specs so historical
+  sessions keep replaying.
 - `show_visual` parameter description and per-kind `data` shapes expanded.
 
 ## [0.1.0] - 2026-11-06

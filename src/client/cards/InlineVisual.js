@@ -58,7 +58,8 @@ export function InlineVisual(props) {
     }, t('loading'))
   }
 
-  if (!spec || typeof spec !== 'object' || spec.version !== 2) {
+  // Version 1 (v0.1) specs keep rendering: replay compatibility matters more than strictness.
+  if (!spec || typeof spec !== 'object' || (spec.version !== 1 && spec.version !== 2)) {
     return h('div', {
       style: {
         border: `1px solid ${tokens.border}`,
