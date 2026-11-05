@@ -1,56 +1,90 @@
-/**
- * Deterministic checks for the `show_visual` host half. Run with:
- *   node tests/normalize.test.mjs
- * No test framework or dependencies: the module is plain ESM.
- */
-import * as mod from '../index.js'
+/* SPDX-License-Identifier: MIT */
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { KINDS, LIMITS } from '../src/host/limits.js'
+import { normalize } from '../src/host/normalize.js'
 
-let definition
-const ctx = {
-  tools: { register: (candidate) => { definition = candidate; return () => {} } },
-  effect: (callback) => callback(),
+const SPECS = {
+  bar: { labels: ['A', 'B'], series: [{ name: 's', values: [1, 2] }], unit: '%' },
+  line: { labels: ['A', 'B'], series: [{ name: 's', values: [1, 2] }] },
+  area: { labels: ['A'], series: [{ name: 's', values: [3] }], unit: 'ms' },
+  radar: { labels: ['A', 'B', 'C'], series: [{ name: 's', values: [1, 2, 3] }] },
+  pie: { slices: [{ label: 'x', value: 3 }, { label: 'y', value: 1 }], unit: 'GB' },
+  doughnut: { slices: [{ label: 'x', value: 3 }] },
+  scatter: { points: [{ x: 1, y: 2 }, { x: 2, y: 4, label: 'p' }], xLabel: 'in', yLabel: 'out' },
+  compare: { columns: ['a', 'b'], rows: [['1', '2']] },
+  timeline: { items: [{ label: 'start' }, { at: 'T+1', label: 'fix', detail: 'done' }] },
+  gantt: { tasks: [{ label: 'a', start: 0, end: 2 }, { label: 'b', start: 1, end: 4 }], unit: 'h' },
+  metrics: { items: [{ label: 'p95', value: 120, delta: '12ms', trend: 'up' }], unit: 'ms' },
 }
 
-mod.apply(ctx)
-if (!definition || definition.name !== 'show_visual') throw new Error('show_visual was not registered')
+const roundTrip = (value) => JSON.parse(JSON.stringify(value))
 
-const lossless = (value) => {
-  const round = JSON.parse(JSON.stringify(value))
-  if (JSON.stringify(round) !== JSON.stringify(value)) throw new Error('value is not lossless JSON: ' + JSON.stringify(value))
-  return round
-}
+test('every kind normalizes to a lossless version 2 spec', () => {
+  for (const kind of KINDS) {
+    const value = normalize({ kind, title: kind, data: SPECS[kind] })
+    assert.equal(value.version, 2)
+    assert.equal(value.kind, kind)
+    assert.equal(value.title, kind)
+    assert.deepEqual(roundTrip(value), value, `${kind} must be lossless JSON`)
+  }
+})
 
-// Optional fields must not leave `undefined` behind: the registry rejects non-lossless JSON.
-let value = await definition.execute({ kind: 'timeline', title: 't', data: { items: [{ label: 'a' }, { label: 'b' }] } })
-lossless(value)
-value = lossless(await definition.execute({ kind: 'bar', title: 'b', data: { labels: ['x'], series: [{ name: 's', values: [1] }] } }))
-value = lossless(await definition.execute({ kind: 'compare', title: 'c', data: { columns: ['a', 'b'], rows: [['1', '2']] } }))
-value = lossless(await definition.execute({ kind: 'line', title: 'l', data: { labels: ['x'], series: [{ name: 's', values: [1] }], unit: '%' } }))
+test('optional fields are omitted rather than set to undefined', () => {
+  const value = normalize({ kind: 'timeline', title: 't', data: { items: [{ label: 'a' }] } })
+  assert.equal('at' in value.data.items[0], false)
+  assert.equal('detail' in value.data.items[0], false)
+  const bar = normalize({ kind: 'bar', title: 'b', data: SPECS.bar })
+  assert.equal('unit' in bar.data, true)
+  const line = normalize({ kind: 'line', title: 'l', data: SPECS.line })
+  assert.equal('unit' in line.data, false)
+})
 
-// Clipping keeps meta small.
-value = lossless(await definition.execute({
-  kind: 'bar',
-  title: 'many',
-  data: { labels: Array.from({ length: 99 }, (_, i) => 'L' + i), series: [{ name: 's', values: Array.from({ length: 99 }, (_, i) => i) }] },
-}))
-if (value.data.labels.length !== 40) throw new Error('labels were not clipped')
-if (value.data.series[0].values.length !== 40) throw new Error('values were not clipped')
+test('upper bounds clip instead of failing', () => {
+  const big = normalize({
+    kind: 'bar',
+    title: 'big',
+    data: {
+      labels: Array.from({ length: 99 }, (_, i) => `L${i}`),
+      series: [{ name: 's', values: Array.from({ length: 99 }, (_, i) => i) }],
+    },
+  })
+  assert.equal(big.data.labels.length, LIMITS.labels)
+  assert.equal(big.data.series[0].values.length, LIMITS.labels)
 
-// Unknown kinds reject with a readable message.
-let rejected = false
-try {
-  await definition.execute({ kind: 'pie', title: 'x', data: {} })
-} catch (error) {
-  rejected = /kind must be one of/.test(String(error.message))
-}
-if (!rejected) throw new Error('unknown kind was not rejected')
+  const slices = normalize({
+    kind: 'pie',
+    title: 'p',
+    data: { slices: Array.from({ length: 99 }, (_, i) => ({ label: `S${i}`, value: i })) },
+  })
+  assert.equal(slices.data.slices.length, LIMITS.slices)
 
-// Contract: meta projection preserves the value; render returns model-facing text.
-const meta = definition.output.presentationMeta(null, value)
-if (JSON.stringify(meta) !== JSON.stringify(value)) throw new Error('presentationMeta changed the value')
-const blocks = definition.output.render(null, value)
-if (!Array.isArray(blocks) || blocks[0].type !== 'text' || !blocks[0].text.includes('bar')) {
-  throw new Error('render returned unexpected content blocks')
-}
+  const tasks = normalize({
+    kind: 'gantt',
+    title: 'g',
+    data: { tasks: Array.from({ length: 99 }, (_, i) => ({ label: `T${i}`, start: i, end: i + 1 })) },
+  })
+  assert.equal(tasks.data.tasks.length, LIMITS.tasks)
 
-console.log('normalize.test.mjs: all checks passed')
+  const metrics = normalize({
+    kind: 'metrics',
+    title: 'm',
+    data: { items: Array.from({ length: 99 }, (_, i) => ({ label: `M${i}`, value: i })) },
+  })
+  assert.equal(metrics.data.items.length, LIMITS.metrics)
+
+  const scatter = normalize({
+    kind: 'scatter',
+    title: 's',
+    data: { points: Array.from({ length: 999 }, (_, i) => ({ x: i, y: i })) },
+  })
+  assert.equal(scatter.data.points.length, LIMITS.points)
+})
+
+test('invalid input rejects with a readable message', () => {
+  assert.throws(() => normalize({ kind: 'pie', title: 'x', data: { slices: [] } }), /must not be empty|needs a `slices`/)
+  assert.throws(() => normalize({ kind: 'nope', title: 'x', data: {} }), /kind must be one of/)
+  assert.throws(() => normalize({ kind: 'gantt', title: 'g', data: { tasks: [{ label: 'a', start: 3, end: 1 }] } }), /end must be >= start/)
+  assert.throws(() => normalize({ kind: 'bar', title: 'b', data: { labels: [], series: [] } }), /must not be empty/)
+  assert.throws(() => normalize(null), /expects one object/)
+})

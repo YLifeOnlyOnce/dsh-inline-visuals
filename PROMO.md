@@ -5,8 +5,8 @@
 
 ## 定位（一句话）
 
-- 中文：**让模型在对话里画出可重放的图**——不是截图，是存在会话日志里、刷新重开都还在的卡片。
-- English: **Charts the model can draw, and the session can replay** — not a screenshot.
+- 中文：**让模型在对话里画出可重放的图**——11 种图型，不是截图，是存在会话日志里、刷新重开都还在的卡片。
+- English: **Charts the model can draw, and the session can replay** — 11 visual kinds, not a screenshot.
 
 ## 目标人群
 
@@ -18,7 +18,8 @@
 
 1. **可重放**：规格持久化在 `tool/result.meta`，刷新 / 重开 / fork 都渲染同一张图，不需要二次调用模型；
 2. **声明式、安全**：模型提交的是数据规格，插件不执行模型输出、不加载外链，超限自动裁剪；
-3. **原生体验**：主题 token + locale + toolview 槽位，深浅色与中英文都不破；零依赖、MIT。
+3. **原生体验 + 工程化**：主题 token + locale + toolview 槽位，深浅色与中英文都不破；
+   `src/` 构建、`node:test` 测试、GitHub Actions CI，运行时单文件、MIT。
 
 ## 素材
 
@@ -32,37 +33,41 @@
 
 ### EN · X thread（3 条）
 
-1. > DSH plugin: `show_visual` lets the model draw bar / line / compare / timeline cards **inside the chat**.
-   > The trick: the spec is persisted on the tool result, so replay needs no model call.
-   > MIT, ~300 lines of JS. → <repo>
+1. > DSH plugin: `show_visual` lets the model draw **11 kinds** of visuals inside the chat —
+   > bar/line/area/pie/doughnut/scatter/radar (Chart.js) plus compare tables, timelines, gantt and KPI tiles.
+   > Spec is persisted on the tool result, so replay needs no model call. MIT. → <repo>
 2. > Why not let the model emit SVG/HTML? Because it must be replayable and theme-safe.
    > Here the model emits *data*, the plugin renders with host theme tokens. Refresh, reopen, fork — same card.
-3. > Install: `plugin_manager install_bundle <path>` · 4 kinds · en/zh · tests included.
-   > Feedback welcome, especially: which kind should come next (pie? flow? gantt?). → <repo>
+   > Non-Web clients get a compact text fallback instead.
+3. > Install: `plugin_manager install_bundle <path>` · one-file runtime (Chart.js inlined) · en/zh · CI + tests.
+   > Feedback welcome, especially: what should v0.3 add (heatmap? flow? sankey?). → <repo>
 
 ### EN · Reddit / HN / forum（一段）
 
-> **A DSH plugin that turns model output into replayable charts**
+> **A DSH plugin that turns model output into 11 kinds of replayable visuals**
 >
 > DSH's tool results are durable session events, so I built `show_visual`: the model submits a small
-> declarative spec (bar / line / compare / timeline), the Host persists it via `output.presentationMeta`,
-> and the Client renders a themed card in `tool.call.toolview`. Because the data lives in the session log,
-> refreshing, reopening or forking the session renders the same chart without another model call.
-> Spec is data, not code — no execution, no external URLs. ~300 lines of JS, MIT, tests included.
-> Repo: <repo> — would love feedback on which visual kinds to add next.
+> declarative spec (7 Chart.js kinds, plus compare tables, timelines, gantt and KPI tiles), the Host
+> persists it via `output.presentationMeta`, and the Client renders a themed card in
+> `tool.call.toolview`. Because the data lives in the session log, refreshing, reopening or forking
+> renders the same visual without another model call. Non-Web clients get a text fallback.
+> Spec is data, not code. `src/` + esbuild + node:test + CI; MIT. Repo: <repo> — feedback welcome on
+> what v0.3 should add (heatmap / flow / sankey?).
 
 ### ZH · 微博（≤ 140 字）
 
-> 给 DSH 写了个插件：模型能把分析画成图了。bar/line/对比表/时间线，图存在会话日志里——刷新、重开、
-> fork 都还在，不用再调模型。声明式规格，不执行模型输出；主题 token 适配深浅色。MIT，欢迎拍砖。
+> 给 DSH 写了个插件：模型能把分析画成图了，11 种——柱状/折线/面积/饼/环/散点/雷达，外加对比表、
+> 时间线、甘特图和 KPI 卡片。图存在会话日志里，刷新、重开、fork 都还在，不用再调模型。
+> 声明式规格不执行代码；主题 token 适配深浅色；有测试和 CI。MIT，欢迎拍砖。
 > <repo> #DSH #开源
 
 ### ZH · 即刻 / 朋友圈（一段）
 
 > 周末给 DeepSeek Harness 写了个插件 `dsh-inline-visuals`：模型不再只回你五段数字，而是调用
-> `show_visual` 画一张卡片（柱状/折线/对比表/时间线）。关键是它把规格持久化在会话日志里，
-> 所以刷新、重开、fork 都能重放，不用二次调模型。声明式规格（不执行代码、不加载外链），
-> 主题 token + 中英文案，MIT，带零依赖测试。想听大家的意见：下一个图型该加什么？
+> `show_visual` 画一张卡片——11 种图型（柱状/折线/饼/散点/雷达、对比表、时间线、甘特、KPI）。
+> 关键是它把规格持久化在会话日志里，刷新、重开、fork 都能重放，不用二次调模型。
+> Chart.js 内联进单文件、React 用宿主的；声明式规格不执行代码，主题 token + 中英文案，
+> 有测试和 CI。想听大家的意见：v0.3 该先加 heatmap 还是 flow？
 
 ### ZH · 公众号
 

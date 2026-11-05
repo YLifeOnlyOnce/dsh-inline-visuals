@@ -1,8 +1,8 @@
 {
   "name": "@community/dsh-inline-visuals",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Render small, replayable charts, comparison tables, and timelines inside a DeepSeek Harness conversation.",
+  "description": "Inline, replayable visuals for DeepSeek Harness: charts, comparison tables, timelines, gantt and KPI tiles.",
   "type": "module",
   "exports": {
     ".": "./index.js",
@@ -16,8 +16,24 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run build && npm test",
+    "prepare-demo": "node scripts/demo.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "chart.js": "^4.6.1",
+    "esbuild": "^0.28.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

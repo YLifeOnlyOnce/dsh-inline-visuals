@@ -54,3 +54,15 @@ normalize.test.mjs: all checks passed
 - 浏览器内实际视觉（无浏览器控制）：浅色/深色、中文/英文文案需人工确认；
 - 页面刷新后的重放渲染；
 - 卸载后的回退表现。
+
+
+## 7. v0.2.0（2026-11-06，本轮）
+
+| 检查 | 结果 |
+|---|---|
+| `npm test`（node:test） | 11/11 通过：11 种图型归一化、可选字段、裁剪上限、非法输入、文本回退、Chart.js 配置形状 |
+| `npm run build` | `index.js` 13.2 KiB（ESM）；`client.js` 205.3 KiB（Chart.js minified 内联，`react` external） |
+| 产物一致性 | `client.js` 内可检出 `require("react")`，由宿主模块表提供；构建脚本可重复执行 |
+| 视觉验证 | `scripts/demo.mjs` 用 headless Chrome + 真实 `buildChartConfig` 渲染 9 种图型到 `docs/demo.png`，确认 Chart.js 配置可出图 |
+| 文本回退 | `renderText()` 覆盖 11 种 kind，长列表截断 |
+| 未验证 | 运行中的 dsh 进程仍加载 v0.1 Host 模块代际；新版本的工具注册与卡片渲染需要**重启 dsh** 后人工确认 |
