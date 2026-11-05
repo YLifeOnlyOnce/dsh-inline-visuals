@@ -95,3 +95,15 @@ profile bundles      → [..., "@oi-yao/dsh-inline-visuals"]
 | 视觉 | `scripts/demo.mjs` 用 headless Chrome + 真实 `buildChartConfig` 渲染 13 种图型与样式变体（横向堆叠、阶梯线、趋势线、瀑布、热力），见 `docs/demo.png` |
 | edit_visual | 单测覆盖：从 session `tool/result.meta` 找到上一张图、patch 合并、无图时报错；同一套测试验证 `execute()` 返回 rejected Promise |
 | 未验证 | 运行中 dsh 需要重启/重装才能加载 v0.3 Host 模块；卡片视觉需浏览器人工确认 |
+
+
+## 10. v0.3.0 live 验证（2026-11-06，重装后）
+
+在运行中的 `web` profile 上 `remove_bundle` + `install_bundle`（本地 link）后，新 Host 模块代际立即生效：
+
+| 检查 | 结果 |
+|---|---|
+| 工具列表 | `Tool.listTools` 同时出现 `show_visual`（13 kind + style）与 `edit_visual` |
+| 新图型 | `show_visual({kind:"waterfall", style:{values:true}, ...})` 成功，返回 v0.3 文本回退（`+120k (→ 120k)`、`净利: 60k`） |
+| 基于图修改 | `edit_visual({patch:{title, note, style:{palette:"warm", values:true}}})` 成功：从会话日志取到上一张图，合并 patch 后重新渲染，未重发 data、未重调模型 |
+| 说明 | 文本回退与工具结果已验证；浏览器内的 Chart.js 卡片与 PNG 导出需人工刷新页面确认 |
