@@ -3,11 +3,12 @@
 ![Inline Visuals banner](docs/banner.png)
 
 **让模型在对话里画出可重放的图。** · A DeepSeek Harness plugin that renders small, replayable
-charts, comparison tables, timelines, gantt and KPI tiles inline in the conversation.
+13 kinds of charts/tables/timelines/gantt/heatmaps/KPI tiles, with presentation styles and an
+`edit_visual` tool the agent can use to revise a previous visual by patching it.
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![dsh](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.3-1f6feb.svg)](https://deepseek-harness.github.io/deepseek-harness/)
-[![kinds](https://img.shields.io/badge/kinds-11%20charts%20%26%20cards-0a6b3d.svg)](#它能画什么)
+[![kinds](https://img.shields.io/badge/kinds-13%20visuals%20%C2%B7%20styles-0a6b3d.svg)](#它能画什么)
 [![npm](https://img.shields.io/npm/v/@oi-yao/dsh-inline-visuals?label=npm&color=cb3837)](https://www.npmjs.com/package/@oi-yao/dsh-inline-visuals)
 [![ci](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml/badge.svg)](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml)
 
@@ -22,7 +23,8 @@ DSH 把它存进会话日志，前端渲染成一张跟随主题的卡片。刷�
 - **安全**：规格是数据不是代码，不执行模型输出、不加载外链，超限自动裁剪；
 - **原生感**：颜色全部来自 `--dsw-alias-*` 主题 token，中英文案走宿主 locale，深浅色都不破；
 - **零依赖安装**：Host 半是纯 ESM；Client 半把 Chart.js 内联进单文件，React 由宿主模块表提供；
-- **文本回退**：不能渲染卡片的客户端（TUI、导出、日志）会收到紧凑的文字摘要（列表或 Markdown 表）。
+- **文本回退**：不能渲染卡片的客户端（TUI、导出、日志）会收到紧凑的文字摘要（列表或 Markdown 表）；
+- **可改可定制**：`style` 控制横向/堆叠/阶梯/数值标签/图例/网格/配色/趋势线，`edit_visual` 让 Agent 基于上一张图做局部修改（只传要改的字段）。
 
 ## 30 秒安装
 
@@ -61,6 +63,8 @@ plugin_manager({ action: "install_bundle", target: "/abs/path/to/dsh-inline-visu
 对模型说一句就行，例如：
 
 > 「把三种缓存方案的命中率画成柱状图，再加一句结论。」
+>
+> 然后接着说：「把这张图改成横向、堆叠，再打开数值标签。」——Agent 会调用 `edit_visual` 做局部修改。
 
 或者验证安装：
 
@@ -75,25 +79,45 @@ cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" }
 
 ## 它能画什么
 
-![11 种图型](docs/demo.png)
+![13 种图型](docs/demo.png)
 
 | 类别 | kinds | 渲染方式 |
 |---|---|---|
-| **图表** | `bar` `line` `area` `pie` `doughnut` `scatter` `radar` | Chart.js（canvas）：主题色、tooltip、图例、动画、可导出 PNG |
-| **结构化** | `compare` `timeline` `gantt` `metrics` | 自绘 SVG / HTML：零依赖、原生表格语义、可复制数据 |
+| **图表** | `bar` `line` `area` `pie` `doughnut` `scatter` `radar` `waterfall` | Chart.js（canvas）：主题色、tooltip、图例、动画、可导出 PNG |
+| **结构化** | `compare` `timeline` `gantt` `heatmap` `metrics` | 自绘 SVG / HTML：零依赖、原生表格语义、可复制数据 |
 
 | kind | 用于 | `data` 形状 |
 |---|---|---|
 | `bar` / `line` / `area` / `radar` | 分类对比 / 趋势 / 面积 / 多维对比 | `{ labels: string[], series: [{ name, values: number[] }], unit?: string }` |
+| `waterfall` | 增减分解 / 利润桥 | `{ labels: string[], values: number[], unit?, totalLabel? }` |
 | `pie` / `doughnut` | 占比 | `{ slices: [{ label, value }], unit?: string }` |
-| `scatter` | 相关性 | `{ points: [{ x, y, label? }], xLabel?, yLabel? }` |
+| `scatter` | 相关性 / 趋势线 | `{ points: [{ x, y, label? }], xLabel?, yLabel? }` |
 | `compare` | 对比表 | `{ columns: string[], rows: string[][] }` |
 | `timeline` | 步骤 / 时间线 | `{ items: [{ at?, label, detail? }] }` |
 | `gantt` | 排期 / 长任务 | `{ tasks: [{ label, start, end, group? }], unit?: string }` |
+| `heatmap` | 矩阵 / 密度 | `{ rows: string[], columns: string[], values: number[][], unit? }` |
 | `metrics` | KPI 巡检 | `{ items: [{ label, value, delta?, trend?: "up"|"down"|"flat" }], unit?: string }` |
 
+### 样式（`style`）
+
+数据不变、只改呈现，模型可以按需选择，或在 `edit_visual` 里随时调整：
+
+| 字段 | 取值 | 作用 |
+|---|---|---|
+| `orientation` | `vertical` / `horizontal` | bar 的方向（横向条形图） |
+| `stacked` | boolean | bar/line/area 堆叠 |
+| `curve` | `linear` / `smooth` / `step` | 折线形态（阶梯线） |
+| `points` | boolean | 是否画数据点 |
+| `values` | boolean | 是否在图上标注数值 |
+| `legend` | `auto` / `bottom` / `top` / `none` | 图例 |
+| `grid` | boolean | 网格线 |
+| `palette` | `default` / `mono` / `cool` / `warm` / `success` | 配色（全部来自主题 token） |
+| `height` | 160–420 | 图表高度 |
+| `density` | `compact` / `normal` | 卡片密度 |
+| `trendLine` | boolean | 散点线性拟合 |
+
 上限：`labels` ≤ 40、`series` ≤ 6、`rows` ≤ 30、`columns` ≤ 8、`items` ≤ 30、`tasks` ≤ 20、
-`metrics` ≤ 12、`slices` ≤ 12、`points` ≤ 240（超出自动裁剪）。单条规格建议控制在 32KB 内。
+`metrics` ≤ 12、`slices` ≤ 12、`points` ≤ 240、heatmap 12×12（超出自动裁剪）。
 
 ## 怎么用
 
@@ -115,6 +139,19 @@ cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" }
 { "kind": "pie", "title": "时间分布", "data": { "slices": [{ "label": "编码", "value": 62 }, { "label": "评审", "value": 18 }, { "label": "其他", "value": 20 }], "unit": "%" } }
 { "kind": "gantt", "title": "发布排期", "data": { "tasks": [{ "label": "实现", "start": 1, "end": 4 }, { "label": "测试", "start": 4, "end": 6 }], "unit": "d" } }
 { "kind": "metrics", "title": "巡检快照", "data": { "items": [{ "label": "p95", "value": "120", "delta": "12ms", "trend": "up" }], "unit": "ms" } }
+{ "kind": "waterfall", "title": "利润桥", "data": { "labels": ["收入", "成本", "税费"], "values": [120, -45, -15], "unit": "k", "totalLabel": "净利" } }
+{ "kind": "heatmap", "title": "请求热力", "data": { "rows": ["周一", "周二"], "columns": ["00", "08", "16"], "values": [[2, 7, 11], [4, 9, 6]] } }
+```
+
+带样式与局部修改：
+
+```jsonc
+// 横向堆叠 + 数值标签
+{ "kind": "bar", "title": "季度收入", "style": { "orientation": "horizontal", "stacked": true, "values": true },
+  "data": { "labels": ["Q1", "Q2"], "series": [{ "name": "新客户", "values": [12, 18] }, { "name": "老客户", "values": [30, 28] }] } }
+
+// 改上一张图：只传要改的字段（Agent 调用 edit_visual）
+{ "patch": { "style": { "curve": "step", "points": false }, "title": "季度收入（阶梯）" } }
 ```
 
 ### 手动给一份规格
@@ -143,7 +180,18 @@ cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" }
 | `title` | string | 是 | 卡片标题（≤ 120 字） |
 | `subtitle` | string | 否 | 副标题（≤ 160 字），常放数据来源 |
 | `note` | string | 否 | 一句话结论，渲染在图下方 |
+| `style` | object | 否 | 上表样式字段，只影响呈现 |
 | `data` | object | 是 | 按 `kind` 取上表形状 |
+
+### `edit_visual`（基于图修改）
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `patch` | object | 是 | 局部 spec：`title` / `subtitle` / `note` / `kind` / `style` / `data`；对象合并、数组替换、`null` 删除 |
+| `target` | string | 否 | 指定要改的图（工具 call id）；省略则改本会话最近一张 |
+
+它从会话日志里找到上一张图，把 patch 合并后重新渲染——不用把整份数据再发一遍，
+也不会重新调用模型。
 
 卡片底部有三个本机操作：**复制数据**（规格 JSON）、**查看数据**（展开原始规格）、
 **导出 PNG**（仅 Chart.js 图型）。它们不影响会话，也不回填模型。
@@ -201,6 +249,9 @@ src/host/              Host 源码：limits / normalize / text / index
 src/client/            Client 源码：theme、use-theme、chart-config、cards/*
 scripts/build.mjs      esbuild 构建：index.js（ESM）+ client.js（单文件，Chart.js 内联、react external）
 scripts/demo.mjs       生成 docs/demo.png（本地 Chrome，维护者脚本）
+src/host/style.js      样式校验与默认值
+src/host/patch.js      edit_visual 的合并语义
+src/host/history.js    从会话日志找上一张图
 publish/              发布素材：release notes、公告、社区讨论稿、上线清单
 tests/                 node:test：normalize / text / chart-config
 .github/workflows/ci.yml  npm ci → test → build → 校验产物无漂移
@@ -210,6 +261,7 @@ tests/                 node:test：normalize / text / chart-config
   必须做到零构建即可运行；CI 会检查产物是否与 `src/` 同步（`git diff --exit-code`）；
 - Chart.js 只作为 devDependency 参与构建，运行时完全内联进 `client.js`；
   React 由宿主的模块表提供（`require('react')`），绝不打包第二份实例；
+- 测试规模：26 个 `node:test` 用例（归一化 13 种 kind、样式校验、文本回退、Chart.js 配置变体、patch/history、客户端 bundle 冒烟）；
 - **发布流水线**：推送 `v*` tag 触发 [`.github/workflows/publish.yml`](.github/workflows/publish.yml)：
   `npm ci → test → build → 产物校验 → npm publish --provenance → GitHub Release`，
   配置见 [`RELEASING.md`](RELEASING.md)；
@@ -233,7 +285,8 @@ npm run check   # build + test
 
 - [x] v0.1：四种图型、主题适配、中英文案、确定性测试、安装验证
 - [x] v0.2：11 种图型、文本回退、PNG 导出、Chart.js 内联、`src/` 构建、测试与 CI
-- [ ] v0.3：更多图型（heatmap / flow / sankey）、配色预设、SVG 类导出
+- [x] v0.3：13 种图型（+ waterfall / heatmap）、`style` 变体、`edit_visual` 局部修改、26 个测试
+- [ ] v0.4：更多图型（flow / sankey / bullet）、SVG 类导出、样式预设
 - [ ] v1.0：输入型交互（用户在卡片里选择并把结果传回模型）、规格体积告警
 
 ## 贡献

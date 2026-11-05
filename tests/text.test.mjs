@@ -38,3 +38,14 @@ test('long lists are truncated in the text fallback', () => {
   assert.match(out, /more\)/)
   assert.ok(out.split('\n').length < 25, 'text fallback must stay compact')
 })
+
+
+test('waterfall and heatmap text fallbacks', () => {
+  const waterfall = text({ kind: 'waterfall', title: 'w', data: { labels: ['收入', '成本'], values: [100, -30], unit: 'k' } })
+  assert.match(waterfall, /- 收入: \+100k \(→ 100k\)/)
+  assert.match(waterfall, /- 成本: -30k \(→ 70k\)/)
+  assert.match(waterfall, /Total: 70k/)
+
+  const heatmap = text({ kind: 'heatmap', title: 'h', data: { rows: ['a'], columns: ['x', 'y'], values: [[1, 2]] } })
+  assert.match(heatmap, /\| a \| 1 \| 2 \|/)
+})

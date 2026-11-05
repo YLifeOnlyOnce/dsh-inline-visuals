@@ -48,10 +48,16 @@ const plugin = {
       console.warn('inline-visuals: locale unavailable, using browser language', error)
     }
     const View = (props) => h(Boundary, null, h(InlineVisual, Object.assign({}, props, { t: translate })))
-    ctx.slots.inject('tool.call.toolview', () => ctx.slots.register({
-      name: 'tool.call.toolview',
-      key: 'show_visual',
-    }, View))
+    ctx.slots.inject('tool.call.toolview', () => {
+      // show_visual renders a new visual; edit_visual renders the patched one.
+      const disposers = ['show_visual', 'edit_visual'].map((key) => ctx.slots.register({
+        name: 'tool.call.toolview',
+        key,
+      }, View))
+      return () => {
+        for (const dispose of disposers) dispose?.()
+      }
+    })
   },
 }
 

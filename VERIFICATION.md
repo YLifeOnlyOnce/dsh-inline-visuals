@@ -84,3 +84,14 @@ profile bundles      → [..., "@oi-yao/dsh-inline-visuals"]
 
 **未完成**：客户端卡片渲染需要页面刷新后人工确认（Chart.js 图型、PNG 导出按钮）；
 `npm publish --dry-run` 已通过（85.6 kB / 10 files / public），正式发布待 npm 账号与 Trusted Publisher 配置。
+
+
+## 9. v0.3.0（2026-11-06）
+
+| 检查 | 结果 |
+|---|---|
+| `npm test` | 26/26 通过：13 种 kind 归一化、`style` 校验/裁剪、waterfall/heatmap 文本回退、横向/堆叠/阶梯/数值标签/趋势线的 Chart.js 配置、patch 合并、history 查找、tools 注册、客户端 bundle 冒烟（双槽位） |
+| 构建 | `index.js` 约 18 KiB；`client.js` 约 210 KiB（Chart.js 内联，react external） |
+| 视觉 | `scripts/demo.mjs` 用 headless Chrome + 真实 `buildChartConfig` 渲染 13 种图型与样式变体（横向堆叠、阶梯线、趋势线、瀑布、热力），见 `docs/demo.png` |
+| edit_visual | 单测覆盖：从 session `tool/result.meta` 找到上一张图、patch 合并、无图时报错；同一套测试验证 `execute()` 返回 rejected Promise |
+| 未验证 | 运行中 dsh 需要重启/重装才能加载 v0.3 Host 模块；卡片视觉需浏览器人工确认 |

@@ -4,6 +4,26 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-11-06
+
+### Added
+
+- **New kinds**: `waterfall` (floating-bar profit bridge) and `heatmap` (matrix with token-derived
+  color intensity); 13 kinds total.
+- **`style` block** on every visual: `orientation` (horizontal bars), `stacked`, `curve`
+  (linear/smooth/step), `points`, `values` (data labels), `legend`, `grid`, `palette`
+  (`default/mono/cool/warm/success`), `height` (160–420), `density` (compact/normal), `trendLine`
+  (scatter linear fit). Style is presentation-only and persisted with the spec.
+- **`edit_visual` tool**: the agent can revise the latest visual (or a specific call id) by sending
+  only a patch — nested objects merge, arrays replace, `null` deletes. It reads the previous spec
+  from the session log, so no data is re-sent and replay stays intact.
+- Client renders `edit_visual` cards with the same renderer as `show_visual`.
+
+### Changed
+
+- Spec version is now `3`; the renderer still accepts v1/v2 specs so historical sessions replay.
+- Test suite grew to 26 cases (styles, patch merge, history lookup, tool registration, Chart.js variants).
+
 ## [0.2.0] - 2026-11-06
 
 ### Changed

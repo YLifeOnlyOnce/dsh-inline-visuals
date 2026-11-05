@@ -22,11 +22,14 @@ const TOKENS = {
 }
 
 const SPECS = {
-  bar: { title: '命中率对比', kind: 'bar', data: { labels: ['LRU', 'LFU', 'TTL'], series: [{ name: '命中率', values: [82, 91, 76] }], unit: '%' } },
-  line: { title: '会话数趋势', kind: 'line', data: { labels: ['Q1', 'Q2', 'Q3', 'Q4'], series: [{ name: '会话数', values: [120, 180, 260, 340] }] } },
-  pie: { title: '时间分布', kind: 'pie', data: { slices: [{ label: '计划', value: 44 }, { label: '编码', value: 31 }, { label: '评审', value: 15 }, { label: '其他', value: 10 }], unit: '%' } },
-  radar: { title: '方案对比', kind: 'radar', data: { labels: ['成本', '风险', '速度', '可维护', '可观测'], series: [{ name: '方案 A', values: [3, 4, 5, 4, 3] }, { name: '方案 B', values: [4, 3, 3, 5, 4] }] } },
-  scatter: { title: '样本分布', kind: 'scatter', data: { points: [{ x: 1, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 5 }, { x: 4, y: 4 }, { x: 5, y: 7 }, { x: 6, y: 6 }, { x: 7, y: 9 }, { x: 8, y: 8 }], xLabel: '输入', yLabel: '耗时' } },
+  bar: { title: '柱状图 bar（含数值）', kind: 'bar', style: { values: true }, data: { labels: ['LRU', 'LFU', 'TTL'], series: [{ name: '命中率', values: [82, 91, 76] }], unit: '%' } },
+  barh: { title: '横向堆叠 bar', kind: 'bar', style: { orientation: 'horizontal', stacked: true, legend: 'bottom' }, data: { labels: ['Q1', 'Q2', 'Q3'], series: [{ name: '新客户', values: [12, 18, 22] }, { name: '老客户', values: [30, 28, 35] }] } },
+  line: { title: '阶梯折线 line', kind: 'line', style: { curve: 'step', points: false }, data: { labels: ['Q1', 'Q2', 'Q3', 'Q4'], series: [{ name: '会话数', values: [120, 180, 260, 340] }] } },
+  area: { title: '面积 area', kind: 'area', style: { points: false }, data: { labels: ['1月', '2月', '3月', '4月'], series: [{ name: '调用量', values: [40, 75, 120, 210] }] } },
+  pie: { title: '饼图 pie', kind: 'pie', style: { legend: 'bottom' }, data: { slices: [{ label: '计划', value: 44 }, { label: '编码', value: 31 }, { label: '评审', value: 15 }, { label: '其他', value: 10 }], unit: '%' } },
+  radar: { title: '雷达图 radar', kind: 'radar', style: { points: false }, data: { labels: ['成本', '风险', '速度', '可维护', '可观测'], series: [{ name: '方案 A', values: [3, 4, 5, 4, 3] }, { name: '方案 B', values: [4, 3, 3, 5, 4] }] } },
+  scatter: { title: '散点 + 趋势线', kind: 'scatter', style: { trendLine: true }, data: { points: [{ x: 1, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 5 }, { x: 4, y: 4 }, { x: 5, y: 7 }, { x: 6, y: 6 }, { x: 7, y: 9 }, { x: 8, y: 8 }], xLabel: '输入', yLabel: '耗时' } },
+  waterfall: { title: '瀑布图 waterfall', kind: 'waterfall', style: { values: true }, data: { labels: ['收入', '成本', '税费'], values: [120, -45, -15], unit: 'k', totalLabel: '净利' } },
 }
 
 const grid = await build({
@@ -89,9 +92,38 @@ const metricsCard = CARD(`
     <div class="tile"><span>今日花费</span><b>$42</b><i class="flat">→ 持平</i></div>
   </div>`, '指标卡 metrics', 'KPI / 巡检快照')
 
+const heatmapCard = CARD(`
+  <svg viewBox="0 0 440 220" width="100%">
+    <text x="92" y="16" text-anchor="end" fill="#8b929c" font-size="10">周一</text>
+    <text x="92" y="52" text-anchor="end" fill="#8b929c" font-size="10">周二</text>
+    <text x="92" y="88" text-anchor="end" fill="#8b929c" font-size="10">周三</text>
+    <text x="92" y="124" text-anchor="end" fill="#8b929c" font-size="10">周四</text>
+    <text x="92" y="160" text-anchor="end" fill="#8b929c" font-size="10">周五</text>
+    <text x="160" y="12" text-anchor="middle" fill="#8b929c" font-size="10">00</text>
+    <text x="244" y="12" text-anchor="middle" fill="#8b929c" font-size="10">08</text>
+    <text x="328" y="12" text-anchor="middle" fill="#8b929c" font-size="10">16</text>
+    <g font-size="10" text-anchor="middle">
+      <rect x="118" y="24" width="84" height="34" rx="3" fill="#1f6feb" opacity=".18"/><text x="160" y="46" fill="#1f2328">2</text>
+      <rect x="202" y="24" width="84" height="34" rx="3" fill="#1f6feb" opacity=".55"/><text x="244" y="46" fill="#fff">7</text>
+      <rect x="286" y="24" width="84" height="34" rx="3" fill="#1f6feb" opacity=".85"/><text x="328" y="46" fill="#fff">11</text>
+      <rect x="118" y="60" width="84" height="34" rx="3" fill="#1f6feb" opacity=".32"/><text x="160" y="82" fill="#fff">4</text>
+      <rect x="202" y="60" width="84" height="34" rx="3" fill="#1f6feb" opacity=".7"/><text x="244" y="82" fill="#fff">9</text>
+      <rect x="286" y="60" width="84" height="34" rx="3" fill="#1f6feb" opacity=".45"/><text x="328" y="82" fill="#fff">6</text>
+      <rect x="118" y="96" width="84" height="34" rx="3" fill="#1f6feb" opacity=".6"/><text x="160" y="118" fill="#fff">8</text>
+      <rect x="202" y="96" width="84" height="34" rx="3" fill="#1f6feb" opacity=".9"/><text x="244" y="118" fill="#fff">12</text>
+      <rect x="286" y="96" width="84" height="34" rx="3" fill="#1f6feb" opacity=".28"/><text x="328" y="118" fill="#1f2328">3</text>
+      <rect x="118" y="132" width="84" height="34" rx="3" fill="#1f6feb" opacity=".4"/><text x="160" y="154" fill="#fff">5</text>
+      <rect x="202" y="132" width="84" height="34" rx="3" fill="#1f6feb" opacity=".65"/><text x="244" y="154" fill="#fff">8</text>
+      <rect x="286" y="132" width="84" height="34" rx="3" fill="#1f6feb" opacity=".75"/><text x="328" y="154" fill="#fff">10</text>
+      <rect x="118" y="168" width="84" height="34" rx="3" fill="#1f6feb" opacity=".22"/><text x="160" y="190" fill="#1f2328">3</text>
+      <rect x="202" y="168" width="84" height="34" rx="3" fill="#1f6feb" opacity=".48"/><text x="244" y="190" fill="#fff">6</text>
+      <rect x="286" y="168" width="84" height="34" rx="3" fill="#1f6feb" opacity=".35"/><text x="328" y="190" fill="#fff">4</text>
+    </g>
+  </svg>`, '热力图 heatmap', '矩阵 / 密度')
+
 const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
 *{box-sizing:border-box}
-body{margin:0;padding:34px 40px;width:1500px;height:1320px;background:#f2f4f7;
+body{margin:0;padding:34px 40px;width:1500px;height:1880px;background:#f2f4f7;
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;color:#1f2328}
 h1{margin:0 0 4px;font-size:26px}
 .lead{margin:0 0 22px;color:#6b7280;font-size:13.5px}
@@ -122,14 +154,18 @@ h1{margin:0 0 4px;font-size:26px}
 .tile i.up{color:#1a7f37}.tile i.down{color:#cf222e}.tile i.flat{color:#8b929c}
 .note{margin-top:18px;color:#9aa0a6;font-size:11.5px}
 </style></head><body>
-<h1>Inline Visuals · 11 种图型</h1>
-<p class="lead">Chart.js 负责 bar / line / area / pie / doughnut / scatter / radar；SVG 与 HTML 负责 compare / timeline / gantt / metrics。全部跟随主题 token，数据存于会话日志。</p>
+<h1>Inline Visuals · 13 种图型 · 样式可调</h1>
+<p class="lead">Chart.js 负责图表类（bar / line / area / pie / doughnut / scatter / radar / waterfall），SVG 与 HTML 负责 compare / timeline / gantt / heatmap / metrics。style 支持横向、堆叠、阶梯、数值标签、图例/网格、配色与趋势线；edit_visual 可基于上一张图做局部修改。</p>
 <div class="grid">
-  ${chartCard('bar', '柱状图 bar', '分类对比')}
-  ${chartCard('line', '折线图 line / area', '趋势')}
-  ${chartCard('pie', '饼图 pie / doughnut', '占比')}
+  ${chartCard('bar', '柱状图 bar', '含数值标签')}
+  ${chartCard('barh', '横向堆叠 bar', 'orientation + stacked')}
+  ${chartCard('line', '阶梯折线 line', 'curve: step')}
+  ${chartCard('area', '面积 area', '填充趋势')}
+  ${chartCard('pie', '饼图 pie', '占比 + 图例')}
   ${chartCard('radar', '雷达图 radar', '多维对比')}
-  ${chartCard('scatter', '散点图 scatter', '相关性')}
+  ${chartCard('scatter', '散点 + 趋势线', 'trendLine: true')}
+  ${chartCard('waterfall', '瀑布图 waterfall', '增减分解')}
+  ${heatmapCard}
   ${compareCard}
   ${timelineCard}
   ${ganttCard}
@@ -155,7 +191,7 @@ const raw = path.join(work, 'demo.png')
 try {
   execFileSync(CHROME, [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-sandbox',
-    '--force-device-scale-factor=2', '--window-size=1500,1320',
+    '--force-device-scale-factor=2', '--window-size=1500,1900',
     `--screenshot=${raw}`, `file://${page}`,
   ], { stdio: 'ignore' })
   await mkdir(path.join(root, 'docs'), { recursive: true })

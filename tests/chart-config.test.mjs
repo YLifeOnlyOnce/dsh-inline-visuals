@@ -25,6 +25,7 @@ const SPECS = {
   doughnut: { slices: [{ label: 'x', value: 1 }] },
   scatter: { points: [{ x: 1, y: 2 }] },
   radar: { labels: ['A', 'B', 'C'], series: [{ name: 's', values: [1, 2, 3] }] },
+  waterfall: { labels: ['a', 'b'], values: [10, -4] },
 }
 
 test('each canvas kind builds a deterministic Chart.js config', () => {
@@ -62,4 +63,42 @@ test('config shapes match the visual form', () => {
 
 test('unsupported kinds fail loudly', () => {
   assert.throws(() => buildChartConfig({ kind: 'compare', data: {} }, TOKENS), /unsupported chart kind/)
+})
+
+
+test('style variants change the Chart.js configuration', () => {
+  const horizontal = buildChartConfig(normalize({ kind: 'bar', title: 'h', data: SPECS.bar, style: { orientation: 'horizontal', stacked: true } }), TOKENS)
+  assert.equal(horizontal.options.indexAxis, 'y')
+  assert.equal(horizontal.options.scales.x.stacked, true)
+
+  const step = buildChartConfig(normalize({ kind: 'line', title: 's', data: SPECS.line, style: { curve: 'step', points: false, legend: 'none', grid: false } }), TOKENS)
+  assert.equal(step.data.datasets[0].stepped, 'middle')
+  assert.equal(step.data.datasets[0].pointRadius, 0)
+  assert.equal(step.options.plugins.legend.display, false)
+  assert.equal(step.options.scales.y.grid.display, false)
+
+  const labelled = buildChartConfig(normalize({ kind: 'bar', title: 'v', data: SPECS.bar, style: { values: true } }), TOKENS)
+  assert.equal(labelled.plugins.length, 1)
+  assert.equal(labelled.plugins[0].id, 'iv-value-labels')
+})
+
+test('scatter trend line adds a regression dataset', () => {
+  const config = buildChartConfig(normalize({
+    kind: 'scatter',
+    title: 't',
+    data: { points: [{ x: 1, y: 2 }, { x: 2, y: 4 }, { x: 3, y: 6 }] },
+    style: { trendLine: true },
+  }), TOKENS)
+  assert.equal(config.data.datasets.length, 2)
+  assert.equal(config.data.datasets[1].type, 'line')
+  assert.equal(config.data.datasets[1].borderDash[0], 6)
+})
+
+test('waterfall renders floating bars with a total', () => {
+  const config = buildChartConfig(normalize({ kind: 'waterfall', title: 'w', data: SPECS.waterfall }), TOKENS)
+  assert.equal(config.type, 'bar')
+  assert.equal(config.data.labels.length, 3)
+  assert.deepEqual(config.data.datasets[0].data[0], [0, 10])
+  assert.deepEqual(config.data.datasets[0].data[1], [10, 6])
+  assert.deepEqual(config.data.datasets[0].data[2], [0, 6])
 })

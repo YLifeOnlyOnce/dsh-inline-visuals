@@ -16,14 +16,16 @@ const SPECS = {
   timeline: { items: [{ label: 'start' }, { at: 'T+1', label: 'fix', detail: 'done' }] },
   gantt: { tasks: [{ label: 'a', start: 0, end: 2 }, { label: 'b', start: 1, end: 4 }], unit: 'h' },
   metrics: { items: [{ label: 'p95', value: 120, delta: '12ms', trend: 'up' }], unit: 'ms' },
+  waterfall: { labels: ['收入', '成本'], values: [100, -30], unit: 'k' },
+  heatmap: { rows: ['a', 'b'], columns: ['x', 'y'], values: [[1, 2], [3, 4]] },
 }
 
 const roundTrip = (value) => JSON.parse(JSON.stringify(value))
 
-test('every kind normalizes to a lossless version 2 spec', () => {
+test('every kind normalizes to a lossless version 3 spec', () => {
   for (const kind of KINDS) {
     const value = normalize({ kind, title: kind, data: SPECS[kind] })
-    assert.equal(value.version, 2)
+    assert.equal(value.version, 3)
     assert.equal(value.kind, kind)
     assert.equal(value.title, kind)
     assert.deepEqual(roundTrip(value), value, `${kind} must be lossless JSON`)
@@ -87,4 +89,28 @@ test('invalid input rejects with a readable message', () => {
   assert.throws(() => normalize({ kind: 'gantt', title: 'g', data: { tasks: [{ label: 'a', start: 3, end: 1 }] } }), /end must be >= start/)
   assert.throws(() => normalize({ kind: 'bar', title: 'b', data: { labels: [], series: [] } }), /must not be empty/)
   assert.throws(() => normalize(null), /expects one object/)
+})
+
+test('style defaults fill in and invalid values reject', () => {
+  const value = normalize({ kind: 'bar', title: 't', data: SPECS.bar })
+  assert.equal(value.style.palette, 'default')
+  assert.equal(value.style.legend, 'auto')
+  assert.equal(value.style.height, 240)
+  assert.equal(value.style.orientation, 'vertical')
+
+  const styled = normalize({
+    kind: 'bar',
+    title: 't',
+    data: SPECS.bar,
+    style: { orientation: 'horizontal', stacked: true, values: true, height: 999, palette: 'warm' },
+  })
+  assert.equal(styled.style.orientation, 'horizontal')
+  assert.equal(styled.style.stacked, true)
+  assert.equal(styled.style.values, true)
+  assert.equal(styled.style.height, 420, 'height is clamped')
+  assert.equal(styled.style.palette, 'warm')
+
+  assert.throws(() => normalize({ kind: 'bar', title: 't', data: SPECS.bar, style: { orientation: 'diagonal' } }), /style.orientation/)
+  assert.throws(() => normalize({ kind: 'bar', title: 't', data: SPECS.bar, style: { palette: 'neon' } }), /style.palette/)
+  assert.throws(() => normalize({ kind: 'bar', title: 't', data: SPECS.bar, style: { height: 'tall' } }), /style.height/)
 })

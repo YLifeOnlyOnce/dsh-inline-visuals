@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 import { KINDS, LIMITS } from './limits.js'
+import { normalizeStyle } from './style.js'
 
 function str(value, field, limit = LIMITS.text) {
   if (typeof value !== 'string') throw new TypeError(`${field} must be a string`)
@@ -155,6 +156,40 @@ function metricsData(data) {
   return { items, ...(unit === undefined ? {} : { unit }) }
 }
 
+function waterfallData(data) {
+  optObject(data, 'waterfall.data')
+  if (!Array.isArray(data.labels) || !Array.isArray(data.values)) {
+    throw new TypeError('waterfall.data needs `labels` and `values` arrays')
+  }
+  const labels = data.labels.slice(0, LIMITS.labels).map((label, i) => str(label, `labels[${i}]`, 60))
+  if (labels.length === 0) throw new TypeError('data.labels must not be empty')
+  const values = data.values.slice(0, labels.length).map((value, i) => finite(value, `values[${i}]`))
+  const unit = optStr(data.unit, 'data.unit', 16)
+  const totalLabel = optStr(data.totalLabel, 'data.totalLabel', 40)
+  return {
+    labels,
+    values,
+    ...(unit === undefined ? {} : { unit }),
+    ...(totalLabel === undefined ? {} : { totalLabel }),
+  }
+}
+
+function heatmapData(data) {
+  optObject(data, 'heatmap.data')
+  if (!Array.isArray(data.rows) || !Array.isArray(data.columns) || !Array.isArray(data.values)) {
+    throw new TypeError('heatmap.data needs `rows`, `columns` and `values` arrays')
+  }
+  const rows = data.rows.slice(0, LIMITS.matrixRows).map((row, i) => str(row, `rows[${i}]`, 40))
+  const columns = data.columns.slice(0, LIMITS.matrixColumns).map((column, i) => str(column, `columns[${i}]`, 40))
+  if (rows.length === 0 || columns.length === 0) throw new TypeError('heatmap rows/columns must not be empty')
+  const values = data.values.slice(0, rows.length).map((row, rowIndex) => {
+    if (!Array.isArray(row)) throw new TypeError(`values[${rowIndex}] must be an array`)
+    return row.slice(0, columns.length).map((value, columnIndex) => finite(value, `values[${rowIndex}][${columnIndex}]`))
+  })
+  const unit = optStr(data.unit, 'data.unit', 16)
+  return { rows, columns, values, ...(unit === undefined ? {} : { unit }) }
+}
+
 const NORMALIZERS = {
   bar: seriesData,
   line: seriesData,
@@ -167,6 +202,8 @@ const NORMALIZERS = {
   timeline: (data) => timelineData(data),
   gantt: (data) => ganttData(data),
   metrics: (data) => metricsData(data),
+  waterfall: (data) => waterfallData(data),
+  heatmap: (data) => heatmapData(data),
 }
 
 /**
@@ -184,11 +221,12 @@ export function normalize(input) {
   const subtitle = optStr(input.subtitle, 'subtitle', 160)
   const note = optStr(input.note, 'note')
   return {
-    version: 2,
+    version: 3,
     kind,
     title,
     ...(subtitle === undefined ? {} : { subtitle }),
     ...(note === undefined ? {} : { note }),
+    style: normalizeStyle(input.style),
     data: NORMALIZERS[kind](data),
   }
 }

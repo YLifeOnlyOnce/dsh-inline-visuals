@@ -38,9 +38,25 @@ export function readTokens() {
   return resolved
 }
 
-/** Series palette derived from semantic tokens (same order in light and dark). */
-export function palette(tokens) {
-  return [tokens.accent, tokens.success, tokens.warn, tokens.error, tokens.idle]
+/** Named series palettes derived from semantic tokens (same in light and dark). */
+export function palette(tokens, name = 'default') {
+  const accent = tokens.accent
+  const success = tokens.success
+  const warn = tokens.warn
+  const error = tokens.error
+  const idle = tokens.idle
+  switch (name) {
+    case 'mono':
+      return [accent, toAlpha(accent, 0.72), toAlpha(accent, 0.5), toAlpha(accent, 0.32), toAlpha(accent, 0.18)]
+    case 'cool':
+      return [accent, success, idle, toAlpha(accent, 0.6), toAlpha(success, 0.6)]
+    case 'warm':
+      return [warn, error, accent, success, idle]
+    case 'success':
+      return [success, toAlpha(success, 0.7), accent, warn, error]
+    default:
+      return [accent, success, warn, error, idle]
+  }
 }
 
 /** Convert a CSS color (hex or rgb/rgba) to an rgba with the requested alpha. */

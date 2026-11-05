@@ -56,6 +56,32 @@ function ganttLines(data) {
   return data.tasks.map((task) => `- ${task.label}: ${fmt(task.start, data.unit)}–${fmt(task.end, data.unit)}`)
 }
 
+function waterfallLines(data) {
+  let running = 0
+  const lines = data.labels.map((label, index) => {
+    const value = data.values[index] ?? 0
+    running += value
+    const sign = value > 0 ? '+' : ''
+    return `- ${label}: ${sign}${fmt(value, data.unit)} (→ ${fmt(running, data.unit)})`
+  })
+  lines.push(`- ${data.totalLabel ?? 'Total'}: ${fmt(running, data.unit)}`)
+  return lines
+}
+
+function heatmapLines(data) {
+  const head = `| | ${data.columns.join(' | ')} |`
+  const rule = `| --- | ${data.columns.map(() => '---').join(' | ')} |`
+  const body = data.rows.slice(0, MAX_LINES).map((row, rowIndex) => {
+    const cells = data.columns.map((_, columnIndex) => {
+      const value = data.values[rowIndex]?.[columnIndex]
+      return value === undefined ? '' : fmt(value, data.unit)
+    })
+    return `| ${row} | ${cells.join(' | ')} |`
+  })
+  if (data.rows.length > MAX_LINES) body.push(`| … | (${data.rows.length - MAX_LINES} more rows) |`)
+  return [head, rule, ...body]
+}
+
 function metricLines(data) {
   return data.items.map((item) => {
     const arrow = item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : item.trend === 'flat' ? '→' : ''
@@ -76,6 +102,8 @@ const BODIES = {
   timeline: timelineLines,
   gantt: ganttLines,
   metrics: metricLines,
+  waterfall: waterfallLines,
+  heatmap: heatmapLines,
 }
 
 /**

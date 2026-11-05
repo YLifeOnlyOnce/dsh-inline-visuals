@@ -45,19 +45,22 @@ test('client.js registers the tool view through the Harness module loader', asyn
   assert.equal(typeof exported.apply, 'function')
   assert.deepEqual(Array.from(exported.inject), ['slots', 'locale'])
 
-  const registrations = []
+  const views = []
   const ctx = {
     effect: (fn) => fn(),
     locale: { register: () => () => {}, bind: () => (key) => key },
     slots: {
       inject: (key, callback) => {
-        registrations.push({ key, value: callback() })
+        assert.equal(key, 'tool.call.toolview')
+        const disposer = callback()
+        assert.equal(typeof disposer, 'function')
       },
-      register: (options) => ({ disposal: options }),
+      register: (options) => {
+        views.push(options.key)
+        return () => {}
+      },
     },
   }
   exported.apply(ctx)
-  assert.equal(registrations.length, 1)
-  assert.equal(registrations[0].key, 'tool.call.toolview')
-  assert.equal(registrations[0].value.disposal.key, 'show_visual')
+  assert.deepEqual(views, ['show_visual', 'edit_visual'])
 })

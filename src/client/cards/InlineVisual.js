@@ -7,6 +7,7 @@ import { useThemeVersion } from '../use-theme.js'
 import { ChartCanvas } from './ChartCanvas.js'
 import { Compare } from './Compare.js'
 import { Gantt } from './Gantt.js'
+import { Heatmap } from './Heatmap.js'
 import { Metrics } from './Metrics.js'
 import { Timeline } from './Timeline.js'
 
@@ -16,8 +17,12 @@ function ChartBody({ spec, t }) {
   if (spec.kind === 'compare') return h(Compare, { spec })
   if (spec.kind === 'timeline') return h(Timeline, { spec })
   if (spec.kind === 'gantt') return h(Gantt, { spec })
+  if (spec.kind === 'heatmap') return h(Heatmap, { spec })
   if (spec.kind === 'metrics') return h(Metrics, { spec })
-  if (CANVAS_KINDS.has(spec.kind)) return h(ChartCanvas, { spec, height: spec.kind === 'pie' || spec.kind === 'doughnut' ? 260 : 240 })
+  if (CANVAS_KINDS.has(spec.kind)) {
+    const height = spec.style?.height ?? (spec.kind === 'pie' || spec.kind === 'doughnut' ? 260 : 240)
+    return h(ChartCanvas, { spec, height })
+  }
   return h('div', { style: { fontSize: '12px' } }, t('unknown'))
 }
 
@@ -89,12 +94,13 @@ export function InlineVisual(props) {
     link.click()
   }
 
+  const style = spec.style ?? {}
   const canExport = CANVAS_KINDS.has(spec.kind)
   return h('figure', {
     ref: figureRef,
     style: {
       margin: '4px 0',
-      padding: '14px 16px',
+      padding: style.density === 'compact' ? '10px 12px' : '14px 16px',
       border: `1px solid ${tokens.border}`,
       borderRadius: '10px',
       background: tokens.surface,
