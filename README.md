@@ -4,7 +4,7 @@
 
 ![Inline Visuals banner](docs/banner.png)
 
-### Charts your agent can draw — and your session can replay.
+### Charts your agent can draw — and your session can replay. ☀
 
 A plugin for [DeepSeek Harness](https://deepseek-harness.github.io/deepseek-harness/) that turns
 numbers into pictures **inside the conversation**: 18 kinds of charts, tables, timelines, gantt,
