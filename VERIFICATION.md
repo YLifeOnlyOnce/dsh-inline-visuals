@@ -197,3 +197,18 @@ profile bundles      → [..., "dsh-inline-visuals"]
 | 视觉 | `docs/structured-gallery.png` 展示看板、桑基、层级树三种卡片 |
 | 正文区 | 复用 turn-tail 机制，三种新卡片同样出现在回答正文下方 |
 | 未验证 | 浏览器内交互（点选追问仅 canvas 图型）需人工确认 |
+
+
+## 19. npm 1.2.0 发布与结构化图型 live 验证（2026-11-15）
+
+- 推 `v1.2.0` tag → Publish 工作流成功（49 测试、构建、`npm publish --provenance`），
+  GitHub Release `v1.2.0` 已创建；
+- npm：`dist-tags.latest = 1.2.0`；
+- profile 安装：`install_bundle dsh-inline-visuals@1.2.0` → `applied`，
+  `dependencies: { "dsh-inline-visuals": "1.2.0" }`（注意：不带版本号时会受 pnpm minimumReleaseAge 限制装到 1.1.0，
+  安装新发布版本需显式写版本）；
+- live 调用三种新图型成功并返回正确文本回退：
+  - `kanban`（Done/Doing/Todo、tags、tone）
+  - `sankey`（输入→模型→prefill/decode→GPU→输出）
+  - `tree`（vault → grafana/notes/repos → 子项）
+- `conversation.chat.turnTail` 中 `inline-visuals` 注册仍在（order 30），三种新卡片同样出现在正文区。
