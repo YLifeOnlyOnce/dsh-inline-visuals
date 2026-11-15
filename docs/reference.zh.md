@@ -5,7 +5,7 @@
 
 ![Inline Visuals banner](banner.png)
 
-让模型在对话里画出可重放的图 —— 18 种图型、可调样式、点选追问、Agent 可改图。
+让模型在对话里画出可重放的图 —— 21 种图型、可调样式、点选追问、Agent 可改图。
 本页是完整技术参考（安装、参数、限制、开发与发布）。
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
@@ -83,7 +83,7 @@ cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" }
 
 ## 它能画什么
 
-![18 种图型](demo.png)
+![21 种图型](demo.png)
 
 | 类别 | kinds | 渲染方式 |
 |---|---|---|
@@ -106,6 +106,9 @@ cordis_inspect_query({ platform: "host", provider: "Tool", method: "listTools" }
 | `histogram` | 分布直方图 | `{ values: number[], bins? }`（默认 10 个 bin） |
 | `confusion` | 混淆矩阵 | `{ labels: string[], matrix: number[][] }`（方阵） |
 | `leaderboard` | 模型排行榜 | `{ metrics: [{ label, better?: "up"|"down", unit? }], rows: [{ name, values: number[] }] }` |
+| `kanban` | 看板 | `{ columns: [{ title, cards: [{ title, detail?, tags?, tone? }] }] }` |
+| `sankey` | 桑基图 | `{ nodes: [{ id, label }], links: [{ from, to, value }] }`（DAG，value > 0） |
+| `tree` | 层级树 | `{ root: { label, detail?, children?: [...] } }`（深度 ≤ 6） |
 
 ### 样式（`style`）
 
@@ -274,7 +277,7 @@ tests/                 node:test：normalize / text / chart-config
   必须做到零构建即可运行；CI 会检查产物是否与 `src/` 同步（`git diff --exit-code`）；
 - Chart.js 只作为 devDependency 参与构建，运行时完全内联进 `client.js`；
   React 由宿主的模块表提供（`require('react')`），绝不打包第二份实例；
-- 测试规模：38 个 `node:test` 用例（归一化 18 种 kind、样式校验、文本回退、Chart.js 配置变体、patch/history、CSV、追问文案、客户端 bundle 冒烟）；
+- 测试规模：49 个 `node:test` 用例（归一化 18 种 kind、样式校验、文本回退、Chart.js 配置变体、patch/history、CSV、追问文案、客户端 bundle 冒烟）；
 - **发布流水线**：推送 `v*` tag 触发 [`.github/workflows/publish.yml`](../.github/workflows/publish.yml)：
   `npm ci → test → build → 产物校验 → npm publish --provenance → GitHub Release`，
   配置见 [`RELEASING.md`](../RELEASING.md)；
@@ -299,7 +302,7 @@ npm run check   # build + test
 - [x] v0.1：四种图型、主题适配、中英文案、确定性测试、安装验证
 - [x] v0.2：11 种图型、文本回退、PNG 导出、Chart.js 内联、`src/` 构建、测试与 CI
 - [x] v0.3：13 种图型（+ waterfall / heatmap）、`style` 变体、`edit_visual` 局部修改
-- [x] **v1.0**：18 种图型（+ flow）、点选追问、CSV/SVG 导出、reduce-motion、32 个测试、规格冻结
+- [x] **v1.0**：21 种图型（+ flow）、点选追问、CSV/SVG 导出、reduce-motion、32 个测试、规格冻结
 - [ ] v1.1：sankey / bullet、样式预设、规格体积告警
 - [ ] v1.2：挂起式输入组件（把用户选择作为工具结果回传模型）
 

@@ -288,6 +288,79 @@ const leaderboardCard = CARD(`
     </tbody>
   </table>`, '排行榜 leaderboard', '模型对比')
 
+const kanbanCard = CARD(`
+  <div style="display:flex;gap:10px;align-items:flex-start">
+    <div style="flex:1;background:#f3f4f6;border-radius:10px;padding:8px">
+      <div style="display:flex;justify-content:space-between;color:#8b929c;font-size:11px;margin-bottom:6px"><span>Todo</span><span>2</span></div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #9a6700;border-radius:8px;padding:8px;margin-bottom:6px">
+        <div style="font-size:12px;color:#1f2328">load test</div>
+        <div style="display:flex;gap:4px;margin-top:5px"><span style="font-size:10px;padding:1px 6px;border-radius:999px;background:#f3f4f6;color:#8b929c">infra</span></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #e5e7eb;border-radius:8px;padding:8px">
+        <div style="font-size:12px;color:#1f2328">docs: usage</div>
+      </div>
+    </div>
+    <div style="flex:1;background:#f3f4f6;border-radius:10px;padding:8px">
+      <div style="display:flex;justify-content:space-between;color:#8b929c;font-size:11px;margin-bottom:6px"><span>Doing</span><span>1</span></div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #1f6feb;border-radius:8px;padding:8px">
+        <div style="font-size:12px;color:#1f2328">turn-tail render</div>
+        <div style="font-size:11px;color:#8b929c;margin-top:3px">slot 已注册</div>
+      </div>
+    </div>
+    <div style="flex:1;background:#f3f4f6;border-radius:10px;padding:8px">
+      <div style="display:flex;justify-content:space-between;color:#8b929c;font-size:11px;margin-bottom:6px"><span>Done</span><span>1</span></div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #1a7f37;border-radius:8px;padding:8px">
+        <div style="font-size:12px;color:#1f2328">v1.1.0 publish</div>
+        <div style="display:flex;gap:4px;margin-top:5px"><span style="font-size:10px;padding:1px 6px;border-radius:999px;background:#f3f4f6;color:#8b929c">npm</span></div>
+      </div>
+    </div>
+  </div>`, '看板 kanban', '任务流 / 状态板')
+
+const sankeyCard = CARD(`
+  <svg viewBox="0 0 440 220" width="100%">
+    <path d="M 60 26 C 120 26, 120 60, 180 60 L 180 92 C 120 92, 120 58, 60 58 Z" fill="#1f6feb" opacity=".32"/>
+    <path d="M 60 76 C 120 76, 120 100, 180 100 L 180 116 C 120 116, 120 96, 60 96 Z" fill="#1f6feb" opacity=".24"/>
+    <path d="M 60 120 C 120 120, 120 128, 180 128 L 180 146 C 120 146, 120 138, 60 138 Z" fill="#1a7f37" opacity=".28"/>
+    <path d="M 200 60 C 260 60, 260 84, 320 84 L 320 116 C 260 116, 260 92, 200 92 Z" fill="#1f6feb" opacity=".3"/>
+    <path d="M 200 104 C 260 104, 260 118, 320 118 L 320 138 C 260 138, 260 128, 200 128 Z" fill="#9a6700" opacity=".3"/>
+    <rect x="48" y="20" width="12" height="122" rx="2" fill="#1f6feb"/>
+    <rect x="188" y="54" width="12" height="96" rx="2" fill="#1f6feb"/>
+    <rect x="328" y="78" width="12" height="62" rx="2" fill="#1f6feb"/>
+    <text x="64" y="16" fill="#8b929c" font-size="10">input</text>
+    <text x="204" y="50" fill="#8b929c" font-size="10">model</text>
+    <text x="344" y="74" fill="#8b929c" font-size="10">output</text>
+    <text x="48" y="160" fill="#8b929c" font-size="10">A</text>
+    <text x="48" y="174" fill="#8b929c" font-size="10">B</text>
+    <text x="48" y="188" fill="#8b929c" font-size="10">C</text>
+    <text x="188" y="176" fill="#8b929c" font-size="10">D</text>
+    <text x="188" y="190" fill="#8b929c" font-size="10">E</text>
+    <text x="328" y="160" fill="#8b929c" font-size="10">F</text>
+    <text x="328" y="174" fill="#8b929c" font-size="10">G</text>
+  </svg>`, '桑基图 sankey', '流向 / 依赖 / 成本去向')
+
+const treeCard = CARD(`
+  <svg viewBox="0 0 440 220" width="100%">
+    <rect x="160" y="14" width="120" height="32" rx="8" fill="#f3f4f6" stroke="#1f6feb"/>
+    <text x="220" y="34" text-anchor="middle" fill="#1f2328" font-size="11">vault</text>
+    <path d="M 220 46 V 66 H 120 V 86" fill="none" stroke="#e5e7eb" stroke-width="1.4"/>
+    <path d="M 220 46 V 66 H 220 V 86" fill="none" stroke="#e5e7eb" stroke-width="1.4"/>
+    <path d="M 220 46 V 66 H 320 V 86" fill="none" stroke="#e5e7eb" stroke-width="1.4"/>
+    <rect x="60" y="86" width="120" height="30" rx="8" fill="#fff" stroke="#e5e7eb"/>
+    <text x="120" y="105" text-anchor="middle" fill="#1f2328" font-size="11">papers</text>
+    <rect x="160" y="86" width="120" height="30" rx="8" fill="#fff" stroke="#e5e7eb"/>
+    <text x="220" y="105" text-anchor="middle" fill="#1f2328" font-size="11">notes</text>
+    <rect x="260" y="86" width="120" height="30" rx="8" fill="#fff" stroke="#e5e7eb"/>
+    <text x="320" y="105" text-anchor="middle" fill="#1f2328" font-size="11">projects</text>
+    <path d="M 120 116 V 140 H 85 V 160" fill="none" stroke="#e5e7eb" stroke-width="1.4"/>
+    <path d="M 120 116 V 140 H 165 V 160" fill="none" stroke="#e5e7eb" stroke-width="1.4"/>
+    <rect x="35" y="160" width="100" height="30" rx="8" fill="#fff" stroke="#e5e7eb"/>
+    <text x="85" y="179" text-anchor="middle" fill="#1f2328" font-size="11">LLM</text>
+    <rect x="145" y="160" width="100" height="30" rx="8" fill="#fff" stroke="#e5e7eb"/>
+    <text x="195" y="179" text-anchor="middle" fill="#1f2328" font-size="11">agents</text>
+  </svg>`, '层级树 tree', '目录 / 组织架构 / 分类')
+
+const structuredCards = [kanbanCard, sankeyCard, treeCard].join('\n')
+
 const mlCards = [
   chartCard('curves', '训练曲线', 'yScale: log · smoothing 0.45'),
   chartCard('roc', 'ROC 曲线', 'baseline · AUC 0.91'),
@@ -335,6 +408,15 @@ setTimeout(() => { for (const [key, spec] of Object.entries(ML_SPECS)) {
 try {
   await shoot(html, 'demo.png', '1500,2300')
   await shoot(mlHtml, 'ml-gallery.png', '1500,1010')
+
+  const structuredHtml = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>${ML_CSS.replace('height:980px', 'height:520px')}</style></head><body>
+<h1>Inline Visuals · 结构化内容</h1>
+<p class="lead">文档、任务、层级、流向都可以变成结构化卡片：看板（kanban）、桑基图（sankey）、层级树（tree）。</p>
+<div class="grid">
+  ${structuredCards}
+</div>
+</body></html>`
+  await shoot(structuredHtml, 'structured-gallery.png', '1500,560')
 } finally {
   if (process.env.DEBUG_ML) console.log('debug work dir:', work)
   else await rm(work, { recursive: true, force: true })

@@ -12,7 +12,8 @@ export const inject = ['tools']
 const DESCRIPTION =
   'Render a small, self-contained visual inside the conversation. Kinds: bar, line, area (chart), '
   + 'pie, doughnut, scatter, radar, waterfall; curve (ROC/PR), histogram, confusion (matrix), '
-  + 'leaderboard; compare (table), timeline, gantt, heatmap, metrics (KPI tiles), flow (DAG). '
+  + 'leaderboard; kanban (board), sankey (flows), tree (hierarchy); compare (table), timeline, '
+  + 'gantt, heatmap, metrics (KPI tiles), flow (DAG). '
   + 'Use `style` for presentation variants (horizontal/stacked bars, stepped lines, palettes, height, '
   + 'data labels, legends). To revise an existing visual, call edit_visual with a partial patch instead '
   + 'of re-sending the whole spec.'

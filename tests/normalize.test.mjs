@@ -26,6 +26,14 @@ const SPECS = {
     metrics: [{ label: 'acc', better: 'up' }, { label: 'latency', better: 'down', unit: 'ms' }],
     rows: [{ name: 'A', values: [0.91, 120] }, { name: 'B', values: [0.93, 140] }],
   },
+  kanban: {
+    columns: [
+      { title: 'Todo', cards: [{ title: 'load test', tags: ['infra'], tone: 'warn' }] },
+      { title: 'Done', cards: [{ title: 'schema', detail: 'migrated' }] },
+    ],
+  },
+  sankey: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], links: [{ from: 'a', to: 'b', value: 5 }] },
+  tree: { root: { label: 'root', children: [{ label: 'a' }, { label: 'b', detail: 'leaf' }] } },
 }
 
 const roundTrip = (value) => JSON.parse(JSON.stringify(value))
@@ -97,6 +105,23 @@ test('invalid input rejects with a readable message', () => {
   assert.throws(() => normalize({ kind: 'gantt', title: 'g', data: { tasks: [{ label: 'a', start: 3, end: 1 }] } }), /end must be >= start/)
   assert.throws(() => normalize({ kind: 'bar', title: 'b', data: { labels: [], series: [] } }), /must not be empty/)
   assert.throws(() => normalize(null), /expects one object/)
+})
+
+test('structured kinds validate their shapes', () => {
+  assert.throws(() => normalize({ kind: 'kanban', title: 'k', data: { columns: [] } }), /must not be empty/)
+  assert.throws(() => normalize({ kind: 'kanban', title: 'k', data: { columns: [{ title: 'x', cards: [{ title: 'c', tone: 'blue' }] }] } }), /tone/)
+  assert.throws(() => normalize({ kind: 'sankey', title: 's', data: { nodes: [], links: [] } }), /nodes must not be empty/)
+  assert.throws(
+    () => normalize({ kind: 'sankey', title: 's', data: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], links: [{ from: 'a', to: 'b', value: 0 }] } }),
+    /must be > 0/,
+  )
+  assert.throws(
+    () => normalize({ kind: 'sankey', title: 's', data: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], links: [{ from: 'a', to: 'b', value: 1 }, { from: 'b', to: 'a', value: 1 }] } }),
+    /DAG/,
+  )
+  assert.throws(() => normalize({ kind: 'tree', title: 't', data: { root: null } }), /root/)
+  const deep = { label: 'n0', children: [{ label: 'n1', children: [{ label: 'n2', children: [{ label: 'n3', children: [{ label: 'n4', children: [{ label: 'n5', children: [{ label: 'n6', children: [{ label: 'n7' }] }] }] }] }] }] }] }
+  assert.throws(() => normalize({ kind: 'tree', title: 'deep', data: { root: deep } }), /depth/)
 })
 
 test('flow rejects cycles and unknown node references', () => {

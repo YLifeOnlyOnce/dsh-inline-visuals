@@ -33,3 +33,10 @@ test('ML kinds serialize to CSV', () => {
   assert.match(csv({ kind: 'histogram', title: 'h', data: { values: [1, 2, 3], bins: 2 } }), /start,end,count/)
   assert.match(csv({ kind: 'leaderboard', title: 'l', data: { metrics: [{ label: 'acc' }], rows: [{ name: 'A', values: [0.9] }] } }), /model,acc\nA,0\.9/)
 })
+
+
+test('kanban, sankey and tree serialize to CSV', () => {
+  assert.match(csv({ kind: 'kanban', title: 'k', data: { columns: [{ title: 'Todo', cards: [{ title: 'a', tags: ['x'] }] }] } }), /column,card,detail,tags\nTodo,a,,x/)
+  assert.match(csv({ kind: 'sankey', title: 's', data: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], links: [{ from: 'a', to: 'b', value: 2 }] } }), /from,to,value\na,b,2/)
+  assert.match(csv({ kind: 'tree', title: 't', data: { root: { label: 'root', children: [{ label: 'child' }] } } }), /parent,label\n,root\nroot,child/)
+})

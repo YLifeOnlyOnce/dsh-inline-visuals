@@ -4,6 +4,7 @@
 export const KINDS = [
   'bar', 'line', 'area', 'pie', 'doughnut', 'scatter', 'radar', 'waterfall', 'heatmap',
   'curve', 'confusion', 'histogram', 'leaderboard',
+  'kanban', 'sankey', 'tree',
   'compare', 'timeline', 'gantt', 'metrics', 'flow',
 ]
 
@@ -50,5 +51,13 @@ export const LIMITS = {
   histogramBins: 30,
   leaderboardRows: 20,
   leaderboardMetrics: 10,
+  kanbanColumns: 6,
+  kanbanCards: 12,
+  kanbanTags: 4,
+  sankeyNodes: 24,
+  sankeyLinks: 40,
+  treeNodes: 60,
+  treeDepth: 6,
+  treeChildren: 10,
   text: 240,
 }

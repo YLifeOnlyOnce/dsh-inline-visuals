@@ -186,3 +186,14 @@ profile bundles      → [..., "dsh-inline-visuals"]
 - live 调用 `show_visual({kind:"curve", auc:0.93})` 成功，文本回退正确；
 - 客户端槽位确认：`conversation.chat.turnTail` 出现 `{ id: "inline-visuals", order: 30, active: true }`——
   每轮最后一张图会渲染在回答正文下方，同时保留工具调用卡片。
+
+
+## 18. v1.2.0（结构化内容：kanban / sankey / tree）
+
+| 检查 | 结果 |
+|---|---|
+| `npm test` | 49/49 通过：新增 kanban/sankey/tree 归一化、DAG/value/tone 校验、tree 深度限制、文本回退、CSV、sankey/tree 布局纯函数 |
+| 构建 | `index.js` 40.8 KiB；`client.js` 220.0 KiB（Chart.js 内联，react external） |
+| 视觉 | `docs/structured-gallery.png` 展示看板、桑基、层级树三种卡片 |
+| 正文区 | 复用 turn-tail 机制，三种新卡片同样出现在回答正文下方 |
+| 未验证 | 浏览器内交互（点选追问仅 canvas 图型）需人工确认 |

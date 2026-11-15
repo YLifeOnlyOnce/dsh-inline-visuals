@@ -7,16 +7,16 @@
 ### Charts your agent can draw — and your session can replay. 
 
 A plugin for [DeepSeek Harness](https://deepseek-harness.github.io/deepseek-harness/) that turns
-numbers into pictures **inside the conversation**: 18 kinds of charts, tables, timelines, gantt,
-heatmaps, flows and KPI tiles — plus ML/paper visuals such as training curves, ROC/PR curves,
-confusion matrices, leaderboards and embedding clusters. With styles, exports and click-to-ask.
+numbers into pictures **inside the conversation**: 21 kinds of charts, tables, timelines, gantt, heatmaps, flows, kanban boards, trees and KPI tiles —
+plus ML/paper visuals such as training curves, ROC/PR curves, confusion matrices, leaderboards
+and embedding clusters. With styles, exports and click-to-ask.
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![dsh](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.3-1f6feb.svg)](https://deepseek-harness.github.io/deepseek-harness/)
 [![kinds](https://img.shields.io/badge/kinds-18%20%C2%B7%20ML-0a6b3d.svg)](#what-it-can-draw)
 [![ci](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml/badge.svg)](https://github.com/YLifeOnlyOnce/dsh-inline-visuals/actions/workflows/ci.yml)
 
-![eighteen visual kinds](docs/demo.png)
+![twenty-one visual kinds](docs/demo.png)
 
 ## Why you'll like it
 
@@ -28,6 +28,7 @@ confusion matrices, leaderboards and embedding clusters. With styles, exports an
   with `edit_visual` instead of redrawing everything.
 - **Native and safe.** Follows the host theme (light/dark, English/Chinese). The model sends *data*,
   never HTML or JavaScript.
+- **Structured content, not just numbers.** Turn a doc or a plan into a kanban board, a sankey flow or a tree.
 - **Made for ML & papers.** Training curves with log axes, smoothing and error bars; ROC/PR with AUC;
   confusion matrices; model leaderboards; embedding clusters; histograms.
 - **Made to share.** Copy JSON/CSV, export PNG or SVG.
@@ -64,7 +65,7 @@ Just talk to your agent:
 |---|---|
 | **Charts** | bar · line · area · pie · doughnut · scatter · radar · waterfall |
 | **ML & papers** | training curves · ROC/PR curves · confusion matrix · histogram · model leaderboard · embedding scatter |
-| **Everything else** | compare table · timeline · gantt · heatmap · flow · KPI tiles |
+| **Structured** | kanban board · sankey flow · tree · compare table · timeline · gantt · heatmap · flow · KPI tiles |
 
 Every visual accepts presentation **styles**: horizontal or stacked bars, stepped lines, data labels,
 legends, grids, five palettes, height and density, scatter trend lines, log axes, EMA smoothing and
@@ -72,6 +73,18 @@ error bars.
 
 ![before and after](docs/before-after.png)
 
+
+## Structured content, not just numbers
+
+![Structured gallery](docs/structured-gallery.png)
+
+A paper, a plan, a directory or a service map is already structured — it just isn't a chart:
+
+> **"Turn this project plan into a kanban board by status."**
+
+> **"Draw where the inference budget goes as a sankey."**
+
+> **"Show the vault directory as a tree."**
 
 ## Built for ML & paper reading
 
@@ -113,8 +126,8 @@ roadmap.
 
 ## Under the hood
 
-- 38 tests (`node:test`), CI on every push, tag-driven npm release with provenance.
-- ~35 KB host half, one self-contained browser file (~217 KB, Chart.js inlined, React shared with the host).
+- 49 tests (`node:test`), CI on every push, tag-driven npm release with provenance.
+- ~41 KB host half, one self-contained browser file (~220 KB, Chart.js inlined, React shared with the host).
 - Spec `version: 3` is stable; v1/v2 specs still render.
 
 Full parameter reference, limits and development notes: **[docs/reference.md](docs/reference.md)**.

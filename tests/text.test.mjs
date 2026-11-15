@@ -82,3 +82,17 @@ test('ML text fallbacks', () => {
   assert.match(leaderboard, /\*\*0\.93\*\*/)
   assert.match(leaderboard, /\*\*100\*\*/)
 })
+
+
+test('kanban, sankey and tree text fallbacks', () => {
+  const kanban = text({ kind: 'kanban', title: 'board', data: { columns: [{ title: 'Todo', cards: [{ title: 'load test', tags: ['infra'] }, { title: 'docs' }] }] } })
+  assert.match(kanban, /## Todo \(2\)/)
+  assert.match(kanban, /- load test \[infra\]/)
+
+  const sankey = text({ kind: 'sankey', title: 'flow', data: { nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], links: [{ from: 'a', to: 'b', value: 12 }] } })
+  assert.match(sankey, /- A → B: 12/)
+
+  const tree = text({ kind: 'tree', title: 'tree', data: { root: { label: 'root', children: [{ label: 'child', detail: 'd' }] } } })
+  assert.match(tree, /^- root/m)
+  assert.match(tree, /^  - child — d/m)
+})

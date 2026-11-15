@@ -14,9 +14,12 @@ import { Confusion } from './Confusion.js'
 import { Flow } from './Flow.js'
 import { Gantt } from './Gantt.js'
 import { Heatmap } from './Heatmap.js'
+import { Kanban } from './Kanban.js'
 import { Leaderboard } from './Leaderboard.js'
+import { Sankey } from './Sankey.js'
 import { Metrics } from './Metrics.js'
 import { Timeline } from './Timeline.js'
+import { Tree } from './Tree.js'
 
 const h = React.createElement
 
@@ -107,7 +110,7 @@ export function InlineVisual(props) {
 
   const style = spec.style ?? {}
   const canExport = CANVAS_KINDS.has(spec.kind)
-  const hasSvg = !CANVAS_KINDS.has(spec.kind) && ['heatmap', 'flow', 'gantt'].includes(spec.kind)
+  const hasSvg = !CANVAS_KINDS.has(spec.kind) && ['heatmap', 'flow', 'gantt', 'sankey', 'tree'].includes(spec.kind)
   const onCopyCsv = () => {
     const csv = toCsv(spec)
     if (!csv || typeof navigator === 'undefined' || !navigator.clipboard) return

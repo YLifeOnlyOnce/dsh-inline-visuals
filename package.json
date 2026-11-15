@@ -1,7 +1,7 @@
 {
   "name": "dsh-inline-visuals",
-  "version": "1.1.0",
-  "description": "Inline, replayable visuals for DeepSeek Harness: 18 kinds for charts, ML/paper reading (training curves, ROC/PR, confusion matrices, leaderboards, embeddings, histograms), flows and KPIs — with styles, click-to-ask and edit_visual.",
+  "version": "1.2.0",
+  "description": "Inline, replayable visuals for DeepSeek Harness: 21 kinds — charts, ML/paper visuals, kanban boards, sankey flows, trees, gantt, heatmaps and KPIs — with styles, click-to-ask and edit_visual.",
   "type": "module",
   "license": "MIT",
   "author": "YLifeOnlyOnce",

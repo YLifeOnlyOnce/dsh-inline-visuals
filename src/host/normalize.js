@@ -331,9 +331,14 @@ function flowData(data) {
     const label = optStr(edge.label, `edges[${index}].label`, 60)
     return { from, to, ...(label === undefined ? {} : { label }) }
   })
-  // Reject cycles: the renderer draws layered DAGs only.
-  const indegree = new Map(nodes.map((node) => [node.id, 0]))
-  const outgoing = new Map(nodes.map((node) => [node.id, []]))
+  // The renderer draws layered DAGs only.
+  if (!assertAcyclic([...ids], edges)) throw new TypeError('flow.data.edges must form a DAG without cycles')
+  return { nodes, edges }
+}
+
+function assertAcyclic(ids, edges) {
+  const indegree = new Map(ids.map((id) => [id, 0]))
+  const outgoing = new Map(ids.map((id) => [id, []]))
   for (const edge of edges) {
     indegree.set(edge.to, (indegree.get(edge.to) ?? 0) + 1)
     outgoing.get(edge.from)?.push(edge.to)
@@ -348,8 +353,96 @@ function flowData(data) {
       if (indegree.get(next) === 0) queue.push(next)
     }
   }
-  if (visited !== nodes.length) throw new TypeError('flow.data.edges must form a DAG without cycles')
-  return { nodes, edges }
+  return visited === ids.length
+}
+
+function kanbanData(data) {
+  optObject(data, 'kanban.data')
+  if (!Array.isArray(data.columns)) throw new TypeError('kanban.data needs a `columns` array')
+  const columns = data.columns.slice(0, LIMITS.kanbanColumns).map((column, columnIndex) => {
+    if (column === null || typeof column !== 'object') throw new TypeError(`columns[${columnIndex}] must be an object`)
+    if (!Array.isArray(column.cards)) throw new TypeError(`columns[${columnIndex}].cards must be an array`)
+    const cards = column.cards.slice(0, LIMITS.kanbanCards).map((card, cardIndex) => {
+      if (card === null || typeof card !== 'object') throw new TypeError(`columns[${columnIndex}].cards[${cardIndex}] must be an object`)
+      const detail = optStr(card.detail, `columns[${columnIndex}].cards[${cardIndex}].detail`, 160)
+      const tone = card.tone === undefined
+        ? undefined
+        : oneOfValue(card.tone, ['default', 'success', 'warn', 'error'], `columns[${columnIndex}].cards[${cardIndex}].tone`)
+      let tags
+      if (card.tags !== undefined) {
+        if (!Array.isArray(card.tags)) throw new TypeError(`columns[${columnIndex}].cards[${cardIndex}].tags must be an array`)
+        tags = card.tags.slice(0, LIMITS.kanbanTags).map((tag, tagIndex) => str(tag, `tags[${tagIndex}]`, 24))
+      }
+      return {
+        title: str(card.title, `columns[${columnIndex}].cards[${cardIndex}].title`, 120),
+        ...(detail === undefined ? {} : { detail }),
+        ...(tags === undefined ? {} : { tags }),
+        ...(tone === undefined ? {} : { tone }),
+      }
+    })
+    return {
+      title: str(column.title, `columns[${columnIndex}].title`, 60),
+      cards,
+    }
+  })
+  if (columns.length === 0) throw new TypeError('kanban.data.columns must not be empty')
+  return { columns }
+}
+
+function oneOfValue(value, allowed, field) {
+  if (!allowed.includes(value)) throw new TypeError(`${field} must be one of ${allowed.join(', ')}`)
+  return value
+}
+
+function sankeyData(data) {
+  optObject(data, 'sankey.data')
+  if (!Array.isArray(data.nodes) || !Array.isArray(data.links)) {
+    throw new TypeError('sankey.data needs `nodes` and `links` arrays')
+  }
+  const nodes = data.nodes.slice(0, LIMITS.sankeyNodes).map((node, index) => {
+    if (node === null || typeof node !== 'object') throw new TypeError(`nodes[${index}] must be an object`)
+    return { id: str(node.id, `nodes[${index}].id`, 40), label: str(node.label ?? node.id, `nodes[${index}].label`, 60) }
+  })
+  if (nodes.length === 0) throw new TypeError('sankey.data.nodes must not be empty')
+  const ids = new Set(nodes.map((node) => node.id))
+  if (ids.size !== nodes.length) throw new TypeError('sankey.data.nodes ids must be unique')
+  const links = data.links.slice(0, LIMITS.sankeyLinks).map((link, index) => {
+    if (link === null || typeof link !== 'object') throw new TypeError(`links[${index}] must be an object`)
+    const from = str(link.from, `links[${index}].from`, 40)
+    const to = str(link.to, `links[${index}].to`, 40)
+    if (!ids.has(from) || !ids.has(to)) throw new TypeError(`links[${index}] references an unknown node`)
+    const value = finite(link.value, `links[${index}].value`)
+    if (value <= 0) throw new TypeError(`links[${index}].value must be > 0`)
+    return { from, to, value }
+  })
+  if (!assertAcyclic([...ids], links)) throw new TypeError('sankey.data.links must form a DAG without cycles')
+  return { nodes, links }
+}
+
+function treeData(data) {
+  optObject(data, 'tree.data')
+  if (data.root === null || typeof data.root !== 'object') throw new TypeError('tree.data needs a `root` object')
+  const counter = { nodes: 0 }
+  const node = (raw, depth, field) => {
+    if (raw === null || typeof raw !== 'object') throw new TypeError(`${field} must be an object`)
+    counter.nodes += 1
+    if (counter.nodes > LIMITS.treeNodes) throw new TypeError(`tree nodes exceed ${LIMITS.treeNodes}`)
+    if (depth > LIMITS.treeDepth) throw new TypeError(`tree depth exceeds ${LIMITS.treeDepth}`)
+    const detail = optStr(raw.detail, `${field}.detail`, 120)
+    let children
+    if (raw.children !== undefined) {
+      if (!Array.isArray(raw.children)) throw new TypeError(`${field}.children must be an array`)
+      children = raw.children
+        .slice(0, LIMITS.treeChildren)
+        .map((child, index) => node(child, depth + 1, `${field}.children[${index}]`))
+    }
+    return {
+      label: str(raw.label, `${field}.label`, 80),
+      ...(detail === undefined ? {} : { detail }),
+      ...(children === undefined || children.length === 0 ? {} : { children }),
+    }
+  }
+  return { root: node(data.root, 0, 'root') }
 }
 
 const NORMALIZERS = {
@@ -371,6 +464,9 @@ const NORMALIZERS = {
   confusion: (data) => confusionData(data),
   histogram: (data) => histogramData(data),
   leaderboard: (data) => leaderboardData(data),
+  kanban: (data) => kanbanData(data),
+  sankey: (data) => sankeyData(data),
+  tree: (data) => treeData(data),
 }
 
 /**

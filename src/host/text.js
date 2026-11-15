@@ -139,6 +139,36 @@ function leaderboardLines(data) {
   return [head, rule, ...body]
 }
 
+function kanbanLines(data) {
+  const lines = []
+  for (const column of data.columns) {
+    lines.push(`## ${column.title} (${column.cards.length})`)
+    for (const card of column.cards.slice(0, MAX_LINES)) {
+      const tags = card.tags && card.tags.length > 0 ? ` [${card.tags.join(', ')}]` : ''
+      lines.push(`- ${card.title}${card.detail ? ` — ${card.detail}` : ''}${tags}`)
+    }
+    if (column.cards.length > MAX_LINES) lines.push(`- … (${column.cards.length - MAX_LINES} more cards)`)
+  }
+  return lines
+}
+
+function sankeyLines(data) {
+  const byId = new Map(data.nodes.map((node) => [node.id, node.label]))
+  return data.links.slice(0, MAX_LINES * 2).map((link) =>
+    `- ${byId.get(link.from) ?? link.from} → ${byId.get(link.to) ?? link.to}: ${fmt(link.value)}`)
+}
+
+function treeLines(data) {
+  const lines = []
+  const walk = (node, depth) => {
+    if (lines.length >= MAX_LINES * 2) return
+    lines.push(`${'  '.repeat(depth)}- ${node.label}${node.detail ? ` — ${node.detail}` : ''}`)
+    for (const child of node.children ?? []) walk(child, depth + 1)
+  }
+  walk(data.root, 0)
+  return lines
+}
+
 function metricLines(data) {
   return data.items.map((item) => {
     const arrow = item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : item.trend === 'flat' ? '→' : ''
@@ -166,6 +196,9 @@ const BODIES = {
   confusion: confusionLines,
   histogram: histogramLines,
   leaderboard: leaderboardLines,
+  kanban: kanbanLines,
+  sankey: sankeyLines,
+  tree: treeLines,
 }
 
 /**

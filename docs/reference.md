@@ -19,7 +19,7 @@ Host module generations load on process start; client changes need a page refres
 
 | Parameter | Type | Required | Notes |
 |---|---|---|---|
-| `kind` | string | yes | one of the 18 kinds below |
+| `kind` | string | yes | one of the 21 kinds below |
 | `title` | string | yes | ≤ 120 chars |
 | `subtitle` | string | no | ≤ 160 chars |
 | `note` | string | no | one-sentence takeaway |
@@ -50,6 +50,9 @@ from the durable `tool/result.meta`, so no data is re-sent and replay stays inta
 | `histogram` | yes | `{ values: number[], bins?: number }` (bins default 10, max 30) |
 | `confusion` | yes | `{ labels: string[], matrix: number[][] }` — square, row = true class |
 | `leaderboard` | yes | `{ metrics: [{ label, better?: "up"|"down", unit? }], rows: [{ name, values: number[] }] }` |
+| `kanban` | yes | `{ columns: [{ title, cards: [{ title, detail?, tags?, tone?: "default"|"success"|"warn"|"error" }] }] }` |
+| `sankey` | yes | `{ nodes: [{ id, label }], links: [{ from, to, value }] }` — DAG, value > 0 |
+| `tree` | yes | `{ root: { label, detail?, children?: [...] } }` — depth ≤ 6 |
 | `compare` | yes | `{ columns: string[], rows: string[][] }` |
 | `timeline` | yes | `{ items: [{ at?, label, detail? }] }` |
 | `gantt` | yes | `{ tasks: [{ label, start, end, group? }], unit?: string }` |
@@ -79,7 +82,8 @@ from the durable `tool/result.meta`, so no data is re-sent and replay stays inta
 
 `labels` ≤ 40, `series` ≤ 6 (with optional `errors`), `rows` ≤ 30, `columns` ≤ 8, `items` ≤ 30,
 `tasks` ≤ 20, `metrics` ≤ 12, `slices` ≤ 12, `points` ≤ 240, heatmap 12×12, confusion 12×12,
-histogram 2000 values, leaderboard 20 rows × 10 metrics, flow nodes ≤ 20 / edges ≤ 40.
+histogram 2000 values, leaderboard 20 rows × 10 metrics, flow nodes ≤ 20 / edges ≤ 40,
+kanban 6 columns × 12 cards, sankey 24 nodes / 40 links, tree 60 nodes / depth 6.
 Oversized input is clipped; the persisted meta should stay under ~32 KB.
 
 ## Design

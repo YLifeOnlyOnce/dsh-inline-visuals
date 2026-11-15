@@ -63,6 +63,30 @@ export function toCsv(spec) {
         ['model', ...data.metrics.map((metric) => metric.label)],
         ...data.rows.map((row) => [row.name, ...row.values]),
       ])
+    case 'kanban': {
+      const rows = []
+      for (const column of data.columns) {
+        if (column.cards.length === 0) {
+          rows.push([column.title, '', '', ''])
+          continue
+        }
+        for (const card of column.cards) {
+          rows.push([column.title, card.title, card.detail ?? '', (card.tags ?? []).join(' ')])
+        }
+      }
+      return rowsToCsv([['column', 'card', 'detail', 'tags'], ...rows])
+    }
+    case 'sankey':
+      return rowsToCsv([['from', 'to', 'value'], ...data.links.map((link) => [link.from, link.to, link.value])])
+    case 'tree': {
+      const rows = []
+      const walk = (node, parent) => {
+        rows.push([parent ?? '', node.label])
+        for (const child of node.children ?? []) walk(child, node.label)
+      }
+      walk(data.root, undefined)
+      return rowsToCsv([['parent', 'label'], ...rows])
+    }
     default:
       return undefined
   }
